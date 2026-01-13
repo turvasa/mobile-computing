@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.mobile_computing_course.ui.theme.MobileComputing_courseTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
@@ -22,10 +23,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 
 
@@ -90,10 +93,10 @@ fun SetBody(isDarkMode: Boolean) {
     // Body
     Column (
         modifier = Modifier
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState()) // Makes the column scrollable
             .padding(top = 200.dp, bottom = 200.dp),
         horizontalAlignment = Alignment.CenterHorizontally
-
     ) {
         // Title
         Text(
@@ -114,9 +117,14 @@ fun SetBody(isDarkMode: Boolean) {
         Image (
             painter = painterResource(R.drawable.you_are_the_meme),
             contentDescription = null,
+            contentScale = ContentScale.FillHeight,
             modifier = Modifier
-                .fillMaxWidth()
                 .height(300.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .border(
+                    2.dp,
+                    if (isDarkMode) Color.White else Color.Black
+                )
         )
     }
 }
