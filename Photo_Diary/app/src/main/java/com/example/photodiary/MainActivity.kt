@@ -151,6 +151,9 @@ fun PhotoDiaryApp() {
     var isDarkMode by remember { mutableStateOf(false) }
     SetNavIcons(isDarkMode)
 
+    // Language setting
+    var isEnglish by remember { mutableStateOf(true) }
+
     // App colors. This value will change automatically
     val appColors: ColorPalette = if (isDarkMode) DarkModeColors else LightModeColors
 
@@ -185,8 +188,10 @@ fun PhotoDiaryApp() {
         // Body
         SetBodyCard(
             navController = navController,
+            isEnglish = isEnglish,
             isDarkMode = isDarkMode,
             onToggleDarkMode = { isDarkMode = !isDarkMode },
+            onToggleLanguage = { isEnglish = !isEnglish },
             appColors = appColors,
             innerPadding = innerPadding
         )
@@ -288,7 +293,7 @@ fun SetBackgroundImage(isDarkMode: Boolean, currentDestination: AppDestinations)
 
 
 @Composable
-fun SetBodyCard(navController: NavHostController, isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: ColorPalette, innerPadding: PaddingValues) {
+fun SetBodyCard(navController: NavHostController, isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: ColorPalette, innerPadding: PaddingValues) {
     NavHost(
         navController,
         startDestination = AppDestinations.HOME.label,
@@ -297,7 +302,7 @@ fun SetBodyCard(navController: NavHostController, isDarkMode: Boolean, onToggleD
 
         // Settings
         composable(AppDestinations.SETTINGS.label) {
-            SettingsCard(isDarkMode, onToggleDarkMode, appColors)
+            SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors)
         }
 
         // Home
