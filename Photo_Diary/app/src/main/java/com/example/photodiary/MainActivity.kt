@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -26,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
@@ -181,7 +179,7 @@ fun PhotoDiaryApp() {
         println("Navigation bar initialized")
 
         // Background
-        SetBackgroundImage(isDarkMode, currentDestination)
+        SetBackgroundImage(isDarkMode)
 
         println("Background initialized")
 
@@ -269,17 +267,12 @@ fun SetNavBar(navController: NavController, appColors: ColorPalette, currentDest
 
 
 @Composable
-fun SetBackgroundImage(isDarkMode: Boolean, currentDestination: AppDestinations) {
+fun SetBackgroundImage(isDarkMode: Boolean) {
 
     // Set the background
     val background: Int = (
-        if (currentDestination == AppDestinations.ADD) {
-            R.drawable.background_add
-        }
-
-        else {
-            if (isDarkMode) R.drawable.background_black else R.drawable.background_white
-        }
+        if (isDarkMode) R.drawable.background_black
+        else R.drawable.background_white
     )
 
     // Background, isDarkMode variable decides which one is used

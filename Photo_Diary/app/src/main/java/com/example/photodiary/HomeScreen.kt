@@ -44,7 +44,7 @@ fun SetBody(appColors: ColorPalette) {
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState()) // Makes the column scrollable
-            .padding(top = 50.dp, bottom = 50.dp),
+            .padding(top = 30.dp, bottom = 30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
