@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 
 
 @Composable
-fun AddNewCard(appColors: ColorPalette) {
+fun AddNewCard(appColors: AppColors, appLanguage: TextBlocks) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -23,7 +23,7 @@ fun AddNewCard(appColors: ColorPalette) {
 
 
 @Composable
-fun Greeting(appColors: ColorPalette, name: String) {
+fun Greeting(appColors: AppColors, name: String) {
     Text(
         text = name,
         color = appColors.primaryText

@@ -22,7 +22,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -30,7 +29,7 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun HomeCard(appColors: ColorPalette) {
+fun HomeCard(appColors: AppColors, appLanguage: TextBlocks) {
     Box(modifier = Modifier.fillMaxSize()) {
         SetBody(appColors)
     }
@@ -38,7 +37,7 @@ fun HomeCard(appColors: ColorPalette) {
 
 
 @Composable
-fun SetBody(appColors: ColorPalette) {
+fun SetBody(appColors: AppColors) {
     // Body
     Column (
         modifier = Modifier
@@ -70,7 +69,7 @@ fun SetBody(appColors: ColorPalette) {
 
 
 @Composable
-fun DisplayPhotos(appColors: ColorPalette) {
+fun DisplayPhotos(appColors: AppColors) {
     val photos = getPhotos()
 
     LazyVerticalGrid(

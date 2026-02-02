@@ -1,48 +1,41 @@
 package com.example.photodiary
 
-import android.R
+import android.view.textclassifier.TextLanguage
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontWeight.Companion.Bold
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun SettingsCard(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: ColorPalette) {
+fun SettingsCard(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -72,7 +65,7 @@ fun SettingsCard(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -
 
 
 @Composable
-fun SetBody(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: ColorPalette) {
+fun SetBody(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: AppColors) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -84,7 +77,7 @@ fun SetBody(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Uni
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
+            verticalArrangement = Arrangement.SpaceBetween
         ){
             // Formatting for setting cards
             val colors = CardDefaults.cardColors(
@@ -114,7 +107,7 @@ fun SetBody(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Uni
 
 
 @Composable
-fun BoxScope.TextCard(appColors: ColorPalette, text: String, rounding: Dp, offset: Dp) {
+fun BoxScope.TextCard(appColors: AppColors, text: String, rounding: Dp, offset: Dp) {
     Card(
         shape = RectangleShape,
         modifier = Modifier
@@ -140,13 +133,12 @@ fun BoxScope.TextCard(appColors: ColorPalette, text: String, rounding: Dp, offse
 
 
 @Composable
-fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: ColorPalette, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
+fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: AppColors, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
-
 
         TextCard(appColors, "Theme", 15.dp, 0.dp)
 
@@ -155,23 +147,35 @@ fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors
             elevation = elevation,
             modifier = modifier
         ) {
-            SetDarkModeButton(isDarkMode, onToggleDarkMode)
+            SetDarkModeButton(isDarkMode, onToggleDarkMode, appColors)
         }
     }
 }
 
 
 @Composable
-fun SetDarkModeButton(isDarkMode: Boolean, onToggleDarkMode: () -> Unit) {
+fun SetDarkModeButton(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: AppColors) {
     // Dark mode button
     Button(
         onClick = onToggleDarkMode,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = appColors.secondaryText
+        )
     ) {
-        //Icon(
-        //    imageVector = if (isDarkMode) Icons.Default.Light
-        //)
+        Image(
+            painter = painterResource(
+                if (isDarkMode) R.drawable.icon_sun
+                else R.drawable.icon_moon
+            ),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .height(32.dp)
+                .padding(start = 2.dp, end = 8.dp)
+        )
         Text(
-            if (isDarkMode) "Light Mode" else "Dark Mode"
+            color = if (isDarkMode) ColorsLightMode.secondary2 else ColorsDarkMode.secondary2,
+            text = if (isDarkMode) "Light Mode" else "Dark Mode"
         )
     }
 }
@@ -180,25 +184,30 @@ fun SetDarkModeButton(isDarkMode: Boolean, onToggleDarkMode: () -> Unit) {
 
 
 @Composable
-fun SetLanguageCard(isEnglish: Boolean, onToggleLanguage: () -> Unit, appColors: ColorPalette, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
-    ElevatedCard(
-        colors = colors,
-        elevation = elevation,
-        modifier = modifier
-    ) {
+fun SetLanguageCard(isEnglish: Boolean, onToggleLanguage: () -> Unit, appColors: AppColors, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+    ){
 
-        Text(
-            "Language",
-            color = appColors.primaryText
-        )
+        TextCard(appColors, "Language", 15.dp, 0.dp)
 
-        SetLanguageButton(isEnglish, onToggleLanguage)
+        ElevatedCard(
+            colors = colors,
+            elevation = elevation,
+            modifier = modifier
+        ) {
+            SetLanguageButton(isEnglish, onToggleLanguage, appColors)
+        }
     }
+
+
 }
 
 
 @Composable
-fun SetLanguageButton(isEnglish: Boolean, onToggleLanguage: () -> Unit) {
+fun SetLanguageButton(isEnglish: Boolean, onToggleLanguage: () -> Unit, appColors: AppColors) {
     // Dark mode button
     Button(
         onClick = onToggleLanguage,
@@ -209,7 +218,7 @@ fun SetLanguageButton(isEnglish: Boolean, onToggleLanguage: () -> Unit) {
         //    imageVector = if (isDarkMode) Icons.Default.Light
         //)
         Text(
-            if (isEnglish) "TODO:English" else "TODO: Suomi"
+            if (isEnglish) "English" else "Suomi"
         )
     }
 }

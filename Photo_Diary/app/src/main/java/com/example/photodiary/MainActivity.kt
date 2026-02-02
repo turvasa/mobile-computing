@@ -1,6 +1,7 @@
 package com.example.photodiary
 
 import android.os.Bundle
+import android.view.textclassifier.TextLanguage
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -73,63 +74,6 @@ enum class AppDestinations(
 
 
 
-// ----------
-// - Colors -
-// ----------
-
-// The colors are AI generated
-
-
-// Color palette for the app
-interface ColorPalette {
-    val primary: Color
-    val primary2: Color
-
-    val secondary: Color
-    val secondary2: Color
-    val secondary3: Color
-
-    val primaryText: Color
-    val secondaryText: Color
-
-    val border: Color
-}
-
-
-// Light mode colors
-object LightModeColors : ColorPalette {
-    override val primary = Color(0xFF2C3A59) // Midnight Blue
-    override val primary2 = Color(0xFF7477B9) // Purple
-
-    override val secondary = Color(0xFFF2C6C2) // Pink
-    override val secondary2 = Color(0xFFE6D8A2) // Gold
-    override val secondary3 = Color(0xFFAEB6C8) // Silver
-
-    override val primaryText = Color(0xFF1F2937) // Greyish Blue
-    override val secondaryText = Color(0xFF4B5563) // Grey
-
-    override val border = Color(0xFF1E293B) // Dark Blue
-}
-
-
-// Dark mode colors
-object DarkModeColors : ColorPalette {
-    override val primary = Color(0xFF0F172A) // Deep Blue
-    override val primary2 = Color(0xFF8B8CF6) // Purple
-
-    override val secondary = Color(0xFFE5A6C8) // Pink
-    override val secondary2 = Color(0xFF9CA3AF) // Silver
-    override val secondary3 = Color(0xFF4FD1C5) // Turquoise
-
-    override val primaryText = Color(0xFFE5E7EB) // White
-    override val secondaryText = Color(0xFF9CA3AF) // Light Grey
-
-    override val border = Color(0xFFCBD5E1) // Light
-}
-
-
-
-
 // ---------
 // - Logic -
 // ---------
@@ -145,17 +89,15 @@ fun PhotoDiaryApp() {
     // Boolean variable for the navigation
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
-    // Boolean variable for the light/dark mode logic
+    // Theme setup
     var isDarkMode by remember { mutableStateOf(false) }
+    val appColors: AppColors = if (isDarkMode) ColorsDarkMode() else ColorsLightMode()
     SetNavIcons(isDarkMode)
 
-    // Language setting
+    // Language setup
     var isEnglish by remember { mutableStateOf(true) }
+    val appLanguage: TextBlocks = if (isEnglish) TextEnglish() else TextFinnish()
 
-    // App colors. This value will change automatically
-    val appColors: ColorPalette = if (isDarkMode) DarkModeColors else LightModeColors
-
-    println("Variables assign.")
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -176,12 +118,8 @@ fun PhotoDiaryApp() {
             onDestinationChange = { currentDestination = it } ) }
     ) { innerPadding ->
 
-        println("Navigation bar initialized")
-
         // Background
         SetBackgroundImage(isDarkMode)
-
-        println("Background initialized")
 
         // Body
         SetBodyCard(
@@ -191,10 +129,9 @@ fun PhotoDiaryApp() {
             onToggleDarkMode = { isDarkMode = !isDarkMode },
             onToggleLanguage = { isEnglish = !isEnglish },
             appColors = appColors,
+            appLanguage = appLanguage,
             innerPadding = innerPadding
         )
-
-        println("Body initialized")
     }
 }
 
@@ -225,7 +162,7 @@ fun SetNavIcons(isDarkMode: Boolean) {
 
 
 @Composable
-fun SetNavBar(navController: NavController, appColors: ColorPalette, currentDestination: AppDestinations, onDestinationChange: (AppDestinations) -> Unit) {
+fun SetNavBar(navController: NavController, appColors: AppColors, currentDestination: AppDestinations, onDestinationChange: (AppDestinations) -> Unit) {
     return NavigationBar(
         containerColor = appColors.secondary,
     ) {
@@ -286,7 +223,7 @@ fun SetBackgroundImage(isDarkMode: Boolean) {
 
 
 @Composable
-fun SetBodyCard(navController: NavHostController, isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: ColorPalette, innerPadding: PaddingValues) {
+fun SetBodyCard(navController: NavHostController, isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks, innerPadding: PaddingValues) {
     NavHost(
         navController,
         startDestination = AppDestinations.HOME.label,
@@ -295,17 +232,17 @@ fun SetBodyCard(navController: NavHostController, isDarkMode: Boolean, isEnglish
 
         // Settings
         composable(AppDestinations.SETTINGS.label) {
-            SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors)
+            SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors, appLanguage)
         }
 
         // Home
         composable(AppDestinations.HOME.label) {
-            HomeCard(appColors)
+            HomeCard(appColors, appLanguage)
         }
 
         // Add
         composable(AppDestinations.ADD.label) {
-            AddNewCard(appColors)
+            AddNewCard(appColors, appLanguage)
         }
     }
 }
