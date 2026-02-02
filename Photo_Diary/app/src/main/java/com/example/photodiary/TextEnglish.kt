@@ -17,7 +17,7 @@ class TextEnglish : TextBlocks {
     override val settings_button_theme_dark = "Dark Mode"
     override val settings_button_theme_light = "Light Mode"
     override val settings_title_language = "Language"
-    override val settings_button = "Suomi"
+    override val settings_button_language = "Suomi"
 
     // Home tab
     override val home_description = "Description"

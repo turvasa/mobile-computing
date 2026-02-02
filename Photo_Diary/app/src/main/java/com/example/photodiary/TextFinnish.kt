@@ -16,7 +16,7 @@ class TextFinnish : TextBlocks {
     override val settings_button_theme_dark = "Tumma"
     override val settings_button_theme_light = "Vaalea"
     override val settings_title_language = "Kieli"
-    override val settings_button = "English"
+    override val settings_button_language = "English"
 
     // Home tab
     override val home_description = "Kuvaus"

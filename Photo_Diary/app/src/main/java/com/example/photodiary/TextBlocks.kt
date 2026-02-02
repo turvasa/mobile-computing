@@ -17,7 +17,7 @@ interface TextBlocks {
     val settings_button_theme_dark: String
     val settings_button_theme_light: String
     val settings_title_language: String
-    val settings_button: String
+    val settings_button_language: String
 
     // Home tab
     val home_description: String
