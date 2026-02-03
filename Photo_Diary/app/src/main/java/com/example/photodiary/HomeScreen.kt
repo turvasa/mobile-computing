@@ -31,13 +31,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeCard(appColors: AppColors, appLanguage: TextBlocks) {
     Box(modifier = Modifier.fillMaxSize()) {
-        SetBody(appColors)
+        SetBody(appColors, appLanguage)
     }
 }
 
 
 @Composable
-fun SetBody(appColors: AppColors) {
+fun SetBody(appColors: AppColors, appLanguage: TextBlocks) {
     // Body
     Column (
         modifier = Modifier
@@ -62,7 +62,10 @@ fun SetBody(appColors: AppColors) {
                 .heightIn(max = 2000.dp)
                 .clip(RoundedCornerShape(10.dp))
         ) {
-            DisplayPhotos(appColors)
+            Box {
+                TitleCard(appColors, appLanguage.title_home, 3.dp, 0.dp)
+                DisplayPhotos(appColors)
+            }
         }
     }
 }
@@ -75,16 +78,12 @@ fun DisplayPhotos(appColors: AppColors) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(8.dp)
+        contentPadding = PaddingValues(top = 30.dp, bottom = 15.dp, start = 12.dp, end = 12.dp)
     ) {
         items(photos) {
-            Image(
-                painter = painterResource(it),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
                     .padding(6.dp)
-                    .fillMaxSize()
                     .aspectRatio(1f)
                     .border(
                         2.dp,
@@ -92,7 +91,14 @@ fun DisplayPhotos(appColors: AppColors) {
                         RoundedCornerShape(10.dp)
                     )
                     .clip(RoundedCornerShape(10.dp))
-            )
+            ) {
+                Image(
+                    painter = painterResource(it),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
     }
 }

@@ -1,42 +1,47 @@
 package com.example.photodiary
 
 import android.os.Bundle
-import android.view.textclassifier.TextLanguage
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.photodiary.ui.theme.PhotoDiaryTheme
 
@@ -44,10 +49,15 @@ import com.example.photodiary.ui.theme.PhotoDiaryTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Database
+        val app = application as PhotoDiaryApplication
+        val db = app.db
+
         enableEdgeToEdge()
         setContent {
             PhotoDiaryTheme {
-                PhotoDiaryApp()
+                PhotoDiaryApp(db)
             }
         }
     }
@@ -60,17 +70,15 @@ class MainActivity : ComponentActivity() {
 // - Destinations -
 // ----------------
 
-
-// App destinations
 enum class AppDestinations(
-    val label: String,
+    var label: String,
+    val route: String,
     var icon: Int
 ) {
-    SETTINGS("Settings", R.drawable.icon_settings_light),
-    HOME("Home", R.drawable.icon_home_light),
-    ADD("Add", R.drawable.icon_add_light),
+    SETTINGS("Settings","settings", R.drawable.icon_settings_light),
+    HOME("Home","home", R.drawable.icon_home_light),
+    ADD("Add","add", R.drawable.icon_take_photo_light),
 }
-
 
 
 
@@ -79,15 +87,14 @@ enum class AppDestinations(
 // ---------
 
 
-@PreviewScreenSizes
+
 @Composable
-fun PhotoDiaryApp() {
+fun PhotoDiaryApp(db: AppDatabase) {
 
     // Navigation control
     val navController = rememberNavController()
-
-    // Boolean variable for the navigation
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     // Theme setup
     var isDarkMode by remember { mutableStateOf(false) }
@@ -97,7 +104,10 @@ fun PhotoDiaryApp() {
     // Language setup
     var isEnglish by remember { mutableStateOf(true) }
     val appLanguage: TextBlocks = if (isEnglish) TextEnglish() else TextFinnish()
+    SetDestinationLabels(appLanguage)
 
+    // Diary DAO
+    val diaryItemDAO = db.diaryItemDao()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -113,9 +123,10 @@ fun PhotoDiaryApp() {
         },
         bottomBar = { SetNavBar(
             navController,
+            isDarkMode,
             appColors,
-            currentDestination,
-            onDestinationChange = { currentDestination = it } ) }
+            currentRoute
+        )}
     ) { innerPadding ->
 
         // Background
@@ -130,6 +141,7 @@ fun PhotoDiaryApp() {
             onToggleLanguage = { isEnglish = !isEnglish },
             appColors = appColors,
             appLanguage = appLanguage,
+            diaryItemDAO = diaryItemDAO,
             innerPadding = innerPadding
         )
     }
@@ -154,15 +166,24 @@ fun SetNavIcons(isDarkMode: Boolean) {
 
     // Home
     AppDestinations.ADD.icon = (
-        if (isDarkMode) R.drawable.icon_add_dark
-        else R.drawable.icon_add_light
+        if (isDarkMode) R.drawable.icon_take_photo_dark
+        else R.drawable.icon_take_photo_light
     )
 }
 
 
 
 @Composable
-fun SetNavBar(navController: NavController, appColors: AppColors, currentDestination: AppDestinations, onDestinationChange: (AppDestinations) -> Unit) {
+fun SetDestinationLabels(appLanguage: TextBlocks) {
+    AppDestinations.SETTINGS.label = appLanguage.nav_settings
+    AppDestinations.HOME.label = appLanguage.nav_home
+    AppDestinations.ADD.label = appLanguage.nav_add
+}
+
+
+
+@Composable
+fun SetNavBar(navController: NavController, isDarkMode: Boolean, appColors: AppColors, currentRoute: String?) {
     return NavigationBar(
         containerColor = appColors.secondary,
     ) {
@@ -180,20 +201,20 @@ fun SetNavBar(navController: NavController, appColors: AppColors, currentDestina
                     text = it.label,
                     color = appColors.primaryText,
                 ) },
-                selected = (it == currentDestination),
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = if (isDarkMode) ColorsLightMode().primaryText else ColorsDarkMode().primaryText
+                ),
+                selected = (it.route == currentRoute),
                 onClick = {
-
                     // Switch the destination (if it is new one)
-                    if (navController.currentDestination?.route != it.label) {
-                        navController.navigate(it.label) {
+                    if (navController.currentDestination?.route != it.route) {
+                        navController.navigate(it.route) {
 
                             // Clear the destination stack, when arriving to HOME screen
                             if (it == AppDestinations.HOME) {
-                                popUpTo(AppDestinations.HOME.label) { inclusive = true }
+                                popUpTo(AppDestinations.HOME.route) { inclusive = true }
                             }
                         }
-
-                        onDestinationChange(it)
                     }
                 }
             )
@@ -223,26 +244,36 @@ fun SetBackgroundImage(isDarkMode: Boolean) {
 
 
 @Composable
-fun SetBodyCard(navController: NavHostController, isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks, innerPadding: PaddingValues) {
+fun SetBodyCard(
+    navController: NavHostController,
+    isDarkMode: Boolean,
+    isEnglish: Boolean,
+    onToggleDarkMode: () -> Unit,
+    onToggleLanguage: () -> Unit,
+    appColors: AppColors,
+    appLanguage: TextBlocks,
+    diaryItemDAO: DiaryItemDAO,
+    innerPadding: PaddingValues
+) {
     NavHost(
         navController,
-        startDestination = AppDestinations.HOME.label,
+        startDestination = AppDestinations.HOME.route,
         modifier = Modifier.padding(innerPadding)
     ) {
 
         // Settings
-        composable(AppDestinations.SETTINGS.label) {
+        composable(AppDestinations.SETTINGS.route) {
             SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors, appLanguage)
         }
 
         // Home
-        composable(AppDestinations.HOME.label) {
+        composable(AppDestinations.HOME.route) {
             HomeCard(appColors, appLanguage)
         }
 
         // Add
-        composable(AppDestinations.ADD.label) {
-            AddNewCard(appColors, appLanguage)
+        composable(AppDestinations.ADD.route) {
+            AddNewCard(isDarkMode, appColors, appLanguage, diaryItemDAO)
         }
     }
 }
@@ -250,15 +281,30 @@ fun SetBodyCard(navController: NavHostController, isDarkMode: Boolean, isEnglish
 
 
 
-// -----------
-// - Preview -
-// -----------
+// ----------------------
+// - Constant functions -
+// ----------------------
 
-
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    PhotoDiaryTheme {
-        PhotoDiaryApp()
+fun BoxScope.TitleCard(appColors: AppColors, text: String, rounding: Dp, offset: Dp) {
+    Card(
+        shape = RectangleShape,
+        modifier = Modifier
+            .align(Alignment.TopStart)
+            .offset(x = offset, y = offset)
+            .clip(RoundedCornerShape(
+                topStart = rounding,
+                topEnd = 0.dp,
+                bottomStart = 0.dp,
+                bottomEnd = rounding
+            )),
+        colors = CardDefaults.cardColors(appColors.primary2),
+    ) {
+        Text(
+            color = appColors.primaryText,
+            fontWeight = FontWeight(700),
+            text = text,
+            modifier = Modifier.padding(3.dp)
+        )
     }
 }
