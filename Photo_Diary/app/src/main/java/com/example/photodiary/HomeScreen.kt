@@ -1,5 +1,7 @@
 package com.example.photodiary
 
+import android.net.Uri
+import android.provider.ContactsContract
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -20,24 +22,29 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import kotlinx.coroutines.flow.MutableStateFlow
 
 
 @Composable
-fun HomeCard(appColors: AppColors, appLanguage: TextBlocks) {
+fun HomeCard(appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryItemDAO) {
     Box(modifier = Modifier.fillMaxSize()) {
-        SetBody(appColors, appLanguage)
+        SetBody(appColors, appLanguage, diaryItemDAO)
     }
 }
 
 
 @Composable
-fun SetBody(appColors: AppColors, appLanguage: TextBlocks) {
+fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryItemDAO) {
     // Body
     Column (
         modifier = Modifier
@@ -64,7 +71,7 @@ fun SetBody(appColors: AppColors, appLanguage: TextBlocks) {
         ) {
             Box {
                 TitleCard(appColors, appLanguage.title_home, 3.dp, 0.dp, true)
-                DisplayPhotos(appColors)
+                DisplayPhotos(appColors, diaryItemDAO)
             }
         }
     }
@@ -72,15 +79,15 @@ fun SetBody(appColors: AppColors, appLanguage: TextBlocks) {
 
 
 @Composable
-fun DisplayPhotos(appColors: AppColors) {
-    val photos = getPhotos()
+fun DisplayPhotos(appColors: AppColors, diaryItemDAO: DiaryItemDAO) {
+    val diaryItems = getImages(diaryItemDAO)
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(top = 30.dp, bottom = 15.dp, start = 12.dp, end = 12.dp)
     ) {
-        items(photos) {
+        items(diaryItems) {
             Box(
                 modifier = Modifier
                     .padding(6.dp)
@@ -92,8 +99,8 @@ fun DisplayPhotos(appColors: AppColors) {
                     )
                     .clip(RoundedCornerShape(10.dp))
             ) {
-                Image(
-                    painter = painterResource(it),
+                AsyncImage(
+                    model = it.imageUri,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -105,21 +112,14 @@ fun DisplayPhotos(appColors: AppColors) {
 
 
 @Composable
-fun getPhotos() : List<Int> {
-    return listOf(
-        R.drawable.demo_1,
-        R.drawable.demo_2,
-        R.drawable.demo_3,
-        R.drawable.demo_4,
-        R.drawable.demo_5,
-        R.drawable.demo_6,
-        R.drawable.demo_7,
-        R.drawable.demo_8,
-        R.drawable.demo_9,
-        R.drawable.demo_10,
-        R.drawable.demo_11,
-        R.drawable.demo_12,
-        R.drawable.demo_13,
-        R.drawable.demo_14,
+fun getImages(diaryItemDAO: DiaryItemDAO) : List<DiaryItem> {
+    val viewModel: DatabaseMethods = viewModel(
+        factory = DatabaseMethodsFactory(diaryItemDAO)
     )
+    LaunchedEffect(Unit) {
+        viewModel.loadDiaryItems()
+    }
+
+    val diaryItems = viewModel.diaryItems.collectAsState()
+    return diaryItems.value
 }

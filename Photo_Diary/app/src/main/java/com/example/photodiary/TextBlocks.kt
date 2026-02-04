@@ -25,8 +25,8 @@ interface TextBlocks {
     val home_location: String
 
     // Add tab
-    val add_new_entry: String
-
+    val add_create: String
+    val add_create_new: String
     val add_info: String
     val add_info_title: String
     val add_info_description: String

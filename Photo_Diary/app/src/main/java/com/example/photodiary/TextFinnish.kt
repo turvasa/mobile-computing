@@ -24,7 +24,8 @@ class TextFinnish : TextBlocks {
     override val home_location = "Sijainti"
 
     // Add tab
-    override val add_new_entry = "Lisää Kuva"
+    override val add_create = "Luo"
+    override val add_create_new = "Luo uusi Merkintä"
     override val add_info = "Tiedot"
     override val add_info_title = "Nimi"
     override val add_info_description = "Kuvaus"

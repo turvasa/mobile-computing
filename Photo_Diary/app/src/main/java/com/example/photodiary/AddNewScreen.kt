@@ -249,24 +249,20 @@ fun SetImageGetter(
 
 
 @Composable
-fun CheckImageValidity(imagePath: String) {
-    // Check path validity
-    if (imagePath.isEmpty()) {
-        throw IllegalArgumentException(errorMessage + "Image path must be given.") as Throwable
-    }
+fun SetAddFileButton(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks) {
 
-    // Check is valid file
-    val file = File(imagePath)
-    if (!file.exists()) {
-        throw IllegalArgumentException(errorMessage + "Image path don't lead to anything.") as Throwable
-    }
+    // Button text
+    val text = appLanguage.add_file_choose
 
-    // Check is valid image file (by GPT)
-    val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    BitmapFactory.decodeFile(file.absolutePath, options)
-    if (options.outWidth <= 0 || options.outHeight <= 0) {
-        throw IllegalArgumentException(errorMessage + "Image path don't lead to image file.") as Throwable
-    }
+    val onClickEvent = { }//DatabaseMethods(diaryItemDAO).addDiaryItem(diaryItem) }
+
+    // Button icon
+    val icon = painterResource(
+        if (isDarkMode) R.drawable.icon_add_dark
+        else R.drawable.icon_add_light
+    )
+
+    SetButton(isDarkMode, appColors, text, onClickEvent, icon)
 }
 
 
@@ -288,12 +284,7 @@ fun SetAddCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlock
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            TitleCard(appColors, appLanguage.add_new_entry, 15.dp, 2.dp, false)
-            val demoItem = DiaryItem(
-                imagePath = "some/path.jpg",
-                title = "My Photo",
-                description = "A great memory"
-            )
+            TitleCard(appColors, appLanguage.add_create, 15.dp, 2.dp, false)
             SetAddButton(isDarkMode,appColors, appLanguage, demoItem, diaryItemDAO)
         }
     }
@@ -304,8 +295,9 @@ fun SetAddCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlock
 fun SetAddButton(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem, diaryItemDAO: DiaryItemDAO) {
 
     // Button text
-    val text = appLanguage.add_new_entry
+    val text = appLanguage.add_create_new
 
+    val di
     val onClickEvent = { }//DatabaseMethods(diaryItemDAO).addDiaryItem(diaryItem) }
 
     // Button icon
@@ -319,6 +311,6 @@ fun SetAddButton(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlo
 
 
 @Composable
-fun GetDiaryItem() : DiaryItem? {
-    return null
+fun GetDiaryItem(diaryItemDAO: DiaryItemDAO) : DiaryItem? {
+
 }

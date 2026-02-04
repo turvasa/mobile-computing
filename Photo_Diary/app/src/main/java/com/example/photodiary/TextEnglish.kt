@@ -25,7 +25,8 @@ class TextEnglish : TextBlocks {
     override val home_location = "Location"
 
     // Add tab
-    override val add_new_entry = "Add New"
+    override val add_create = "Create"
+    override val add_create_new = "Create new Entry"
     override val add_info = "Information"
     override val add_info_title = "Title"
     override val add_info_description = "Description"
