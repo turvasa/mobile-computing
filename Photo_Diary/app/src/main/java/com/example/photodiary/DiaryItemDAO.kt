@@ -5,15 +5,16 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DiaryItemDAO {
 
     @Query("SELECT * FROM DiaryItem ORDER BY id DESC")
-    suspend fun getAll(): List<DiaryItem>
+    fun getAll(): Flow<List<DiaryItem>>
 
     @Query("SELECT * FROM DiaryItem WHERE id = :id")
-    suspend fun findByID(id: Int): List<DiaryItem>
+    fun findByID(id: Int): Flow<DiaryItem>
 
     @Insert
     suspend fun insert(diaryItem: DiaryItem)

@@ -3,37 +3,44 @@ package com.example.photodiary
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class DatabaseMethods(private val diaryItemDAO: DiaryItemDAO) : ViewModel() {
 
-    val diaryItems = MutableStateFlow<List<DiaryItem>>(emptyList())
+
+    // Automatically load all entries to memory
+    val diaryItems: StateFlow<List<DiaryItem>> =
+        diaryItemDAO.getAll()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
 
 
-    fun loadDiaryItems() {
-        viewModelScope.launch(Dispatchers.IO) {
-            diaryItems.value = diaryItemDAO.getAll()
-        }
-    }
+    // Get single item
+    fun getDiaryItemByID(id: Int) : StateFlow<DiaryItem?> =
+        diaryItemDAO.findByID(id)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null
+            )
 
-    fun findByID(id: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            diaryItems.value = diaryItemDAO.findByID(id)
-        }
-    }
+
 
     fun addDiaryItem(diaryItem: DiaryItem) {
         viewModelScope.launch(Dispatchers.IO) {
             diaryItemDAO.insert(diaryItem)
-            loadDiaryItems()
         }
     }
 
     fun updateDiaryItem(updatedDiaryItem: DiaryItem) {
         viewModelScope.launch(Dispatchers.IO) {
             diaryItemDAO.update(updatedDiaryItem)
-            loadDiaryItems()
         }
     }
 

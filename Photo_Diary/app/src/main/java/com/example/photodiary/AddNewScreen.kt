@@ -39,7 +39,7 @@ private const val errorMessage = "[ERROR] - AddNew: "
 
 
 @Composable
-fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryItemDAO) {
+fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, viewModel: DatabaseMethods) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -60,14 +60,14 @@ fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlock
                 )
                 .clip(RoundedCornerShape(10.dp))
         ) {
-            SetBody(isDarkMode, appColors, appLanguage, diaryItemDAO)
+            SetBody(isDarkMode, appColors, appLanguage, viewModel)
         }
     }
 }
 
 
 @Composable
-fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryItemDAO) {
+fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, viewModel: DatabaseMethods) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -101,7 +101,6 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
             // Diary Item information
             var title by remember { mutableStateOf("") }
             var description by remember { mutableStateOf("") }
-            var imagePath by remember { mutableStateOf("") }
             var imageUri by remember { mutableStateOf<Uri?>(null) }
             //var temperature by remember { mutableStateOf("") }
             //var location by remember { mutableStateOf("") }
@@ -115,10 +114,14 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
             SetImageGetter(
                 appColors, appLanguage,
                 colors, elevation, modifier,
-                imagePath, imageUri,
-                { imagePath = it }, {imageUri = it}
+                imageUri, { imageUri = it }
             )
-            SetAddCard(isDarkMode, appColors, appLanguage, diaryItemDAO, colors, elevation, modifier)
+            SetAddCard(
+                isDarkMode, appColors, appLanguage,
+                colors, elevation, modifier,
+                title, description, imageUri,
+                viewModel
+            )
         }
     }
 }
@@ -190,7 +193,13 @@ fun SetInfoInputs(
 
 
 @Composable
-fun SetInfoInput(height: Float, value: String, toggle: (String) -> Unit, maxLines: Int, label: String, placeholder: String, appColors: AppColors) {
+fun SetInfoInput(
+    height: Float, value: String,
+    toggle: (String) -> Unit,
+    maxLines: Int, label: String,
+    placeholder: String,
+    appColors: AppColors
+) {
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth(0.9f)
@@ -230,8 +239,7 @@ fun SetInfoInput(height: Float, value: String, toggle: (String) -> Unit, maxLine
 fun SetImageGetter(
     appColors: AppColors, appLanguage: TextBlocks,
     colors: CardColors, elevation: CardElevation, modifier: Modifier,
-    imagePath: String, imageuri: Uri?,
-    toggleImagePath: (String) -> Unit, toggleImageUri: (Uri?) -> Unit
+    imageuri: Uri?, toggleImageUri: (Uri?) -> Unit
 ) {
     ElevatedCard(
         colors = colors,
@@ -274,7 +282,12 @@ fun SetAddFileButton(isDarkMode: Boolean, appColors: AppColors, appLanguage: Tex
 
 
 @Composable
-fun SetAddCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryItemDAO, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
+fun SetAddCard(
+    isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
+    colors: CardColors, elevation: CardElevation, modifier: Modifier,
+    itemTitle: String, itemDescription: String, itemUri: Uri?,
+    viewModel: DatabaseMethods
+) {
     ElevatedCard(
         colors = colors,
         elevation = elevation,
@@ -285,20 +298,36 @@ fun SetAddCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlock
             contentAlignment = Alignment.Center
         ) {
             TitleCard(appColors, appLanguage.add_create, 15.dp, 2.dp, false)
-            SetAddButton(isDarkMode,appColors, appLanguage, demoItem, diaryItemDAO)
+
+            SetAddButton(
+                isDarkMode,appColors, appLanguage,
+                itemTitle, itemDescription, itemUri,
+                viewModel)
         }
     }
 }
 
 
 @Composable
-fun SetAddButton(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem, diaryItemDAO: DiaryItemDAO) {
+fun SetAddButton(
+    isDarkMode: Boolean,
+    appColors: AppColors, appLanguage: TextBlocks,
+    itemTitle: String, itemDescription: String, itemUri: Uri?,
+    viewModel: DatabaseMethods) {
 
     // Button text
     val text = appLanguage.add_create_new
 
-    val di
-    val onClickEvent = { }//DatabaseMethods(diaryItemDAO).addDiaryItem(diaryItem) }
+    // Button click event
+    val onClickEvent = {
+        val diaryItem = DiaryItem(
+            title = itemTitle,
+            description = itemDescription,
+            imageUri = itemUri
+        )
+
+        viewModel.addDiaryItem(diaryItem)
+    }
 
     // Button icon
     val icon = painterResource(
@@ -307,10 +336,4 @@ fun SetAddButton(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlo
     )
 
     SetButton(isDarkMode, appColors, text, onClickEvent, icon)
-}
-
-
-@Composable
-fun GetDiaryItem(diaryItemDAO: DiaryItemDAO) : DiaryItem? {
-
 }

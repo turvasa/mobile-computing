@@ -36,15 +36,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 
 @Composable
-fun HomeCard(appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryItemDAO) {
+fun HomeCard(appColors: AppColors, appLanguage: TextBlocks, viewModel: DatabaseMethods) {
     Box(modifier = Modifier.fillMaxSize()) {
-        SetBody(appColors, appLanguage, diaryItemDAO)
+        SetBody(appColors, appLanguage, viewModel)
     }
 }
 
 
 @Composable
-fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryItemDAO) {
+fun SetBody(appColors: AppColors, appLanguage: TextBlocks, viewModel: DatabaseMethods) {
     // Body
     Column (
         modifier = Modifier
@@ -71,7 +71,7 @@ fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryIt
         ) {
             Box {
                 TitleCard(appColors, appLanguage.title_home, 3.dp, 0.dp, true)
-                DisplayPhotos(appColors, diaryItemDAO)
+                DisplayPhotos(appColors, viewModel)
             }
         }
     }
@@ -79,8 +79,8 @@ fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItemDAO: DiaryIt
 
 
 @Composable
-fun DisplayPhotos(appColors: AppColors, diaryItemDAO: DiaryItemDAO) {
-    val diaryItems = getImages(diaryItemDAO)
+fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseMethods) {
+    val diaryItems = getImages(viewModel)
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -112,14 +112,7 @@ fun DisplayPhotos(appColors: AppColors, diaryItemDAO: DiaryItemDAO) {
 
 
 @Composable
-fun getImages(diaryItemDAO: DiaryItemDAO) : List<DiaryItem> {
-    val viewModel: DatabaseMethods = viewModel(
-        factory = DatabaseMethodsFactory(diaryItemDAO)
-    )
-    LaunchedEffect(Unit) {
-        viewModel.loadDiaryItems()
-    }
-
+fun getImages(viewModel: DatabaseMethods) : List<DiaryItem> {
     val diaryItems = viewModel.diaryItems.collectAsState()
     return diaryItems.value
 }

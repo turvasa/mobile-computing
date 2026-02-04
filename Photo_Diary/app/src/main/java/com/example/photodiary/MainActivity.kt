@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -111,8 +112,11 @@ fun PhotoDiaryApp(db: AppDatabase) {
     val appLanguage: TextBlocks = if (isEnglish) TextEnglish() else TextFinnish()
     SetDestinationLabels(appLanguage)
 
-    // Diary DAO
+    // Diary DAO setup
     val diaryItemDAO = db.diaryItemDao()
+    val viewModel: DatabaseMethods = viewModel(
+        factory = DatabaseMethodsFactory(diaryItemDAO)
+    )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -139,15 +143,13 @@ fun PhotoDiaryApp(db: AppDatabase) {
 
         // Body
         SetBodyCard(
-            navController = navController,
-            isEnglish = isEnglish,
-            isDarkMode = isDarkMode,
-            onToggleDarkMode = { isDarkMode = !isDarkMode },
-            onToggleLanguage = { isEnglish = !isEnglish },
-            appColors = appColors,
-            appLanguage = appLanguage,
-            diaryItemDAO = diaryItemDAO,
-            innerPadding = innerPadding
+            navController,
+            isDarkMode, isEnglish,
+            { isDarkMode = !isDarkMode },
+            { isEnglish = !isEnglish },
+            appColors, appLanguage,
+            diaryItemDAO, viewModel,
+            innerPadding
         )
     }
 }
@@ -258,6 +260,7 @@ fun SetBodyCard(
     appColors: AppColors,
     appLanguage: TextBlocks,
     diaryItemDAO: DiaryItemDAO,
+    viewModel: DatabaseMethods,
     innerPadding: PaddingValues
 ) {
     NavHost(
@@ -268,17 +271,17 @@ fun SetBodyCard(
 
         // Settings
         composable(AppDestinations.SETTINGS.route) {
-            SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors, appLanguage)
+            SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors, appLanguage, diaryItemDAO, viewModel)
         }
 
         // Home
         composable(AppDestinations.HOME.route) {
-            HomeCard(appColors, appLanguage)
+            HomeCard(appColors, appLanguage, diaryItemDAO, viewModel)
         }
 
         // Add
         composable(AppDestinations.ADD.route) {
-            AddNewCard(isDarkMode, appColors, appLanguage, diaryItemDAO)
+            AddNewCard(isDarkMode, appColors, appLanguage, diaryItemDAO, viewModel)
         }
     }
 }

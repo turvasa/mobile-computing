@@ -24,7 +24,16 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun SettingsCard(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks) {
+fun SettingsCard(
+    isDarkMode: Boolean,
+    isEnglish: Boolean,
+    onToggleDarkMode: () -> Unit,
+    onToggleLanguage: () -> Unit,
+    appColors: AppColors,
+    appLanguage: TextBlocks,
+    diaryItemDAO: DiaryItemDAO,
+    viewModel: DatabaseMethods
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
