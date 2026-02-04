@@ -26,8 +26,10 @@ class TextEnglish : TextBlocks {
 
     // Add tab
     override val add_new_entry = "Add New"
-    override val add_title = "Title"
-    override val add_description = "Description"
-    override val add_choose_file = "Choose file"
-    override val add_take_photo = "Take photo"
+    override val add_info = "Information"
+    override val add_info_title = "Title"
+    override val add_info_description = "Description"
+    override val add_file = "Image"
+    override val add_file_choose = "Choose file"
+    override val add_file_take_photo = "Take photo"
 }

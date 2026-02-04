@@ -26,9 +26,12 @@ interface TextBlocks {
 
     // Add tab
     val add_new_entry: String
-    val add_title: String
-    val add_description: String
-    val add_choose_file: String
-    val add_take_photo: String
+
+    val add_info: String
+    val add_info_title: String
+    val add_info_description: String
+    val add_file: String
+    val add_file_choose: String
+    val add_file_take_photo: String
 
 }

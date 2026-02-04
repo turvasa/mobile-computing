@@ -7,7 +7,7 @@ class ColorsLightMode : AppColors {
     override val primary2 = Color(0xFF7477B9) // Purple
 
     override val secondary = Color(0xFFF2C6C2) // Pink
-    override val secondary2 = Color(0xFFE6D8A2) // Gold
+    override val secondary2 = Color(0xFFA2E6E4) // Gold
     override val secondary3 = Color(0xFFAEB6C8) // Silver
 
     override val primaryText = Color(0xFF1F2937) // Greyish Blue

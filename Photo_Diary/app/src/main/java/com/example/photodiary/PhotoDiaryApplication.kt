@@ -5,11 +5,16 @@ import androidx.room.Room
 
 class PhotoDiaryApplication : Application() {
 
-    val db = Room.databaseBuilder(
-        applicationContext,
-        AppDatabase::class.java, "diary-db",
-    )
-        .enableMultiInstanceInvalidation()
-        .build()
+    lateinit var db: AppDatabase
+
+    override fun onCreate() {
+        super.onCreate()
+        db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "diary-db",
+        )
+            .enableMultiInstanceInvalidation()
+            .build()
+    }
 
 }

@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -32,11 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -286,7 +291,7 @@ fun SetBodyCard(
 // ----------------------
 
 @Composable
-fun BoxScope.TitleCard(appColors: AppColors, text: String, rounding: Dp, offset: Dp) {
+fun BoxScope.TitleCard(appColors: AppColors, text: String, rounding: Dp, offset: Dp, isLargeTitle: Boolean) {
     Card(
         shape = RectangleShape,
         modifier = Modifier
@@ -298,13 +303,46 @@ fun BoxScope.TitleCard(appColors: AppColors, text: String, rounding: Dp, offset:
                 bottomStart = 0.dp,
                 bottomEnd = rounding
             )),
-        colors = CardDefaults.cardColors(appColors.primary2),
+        colors = CardDefaults.cardColors(appColors.primary2)
     ) {
         Text(
             color = appColors.primaryText,
-            fontWeight = FontWeight(700),
+            fontWeight = if (isLargeTitle) FontWeight.W700 else FontWeight.W500,
+            fontSize = if (isLargeTitle) 23.sp else 15.sp,
             text = text,
             modifier = Modifier.padding(3.dp)
+        )
+    }
+}
+
+
+@Composable
+fun SetButton(isDarkMode: Boolean, appColors: AppColors, text: String, onClickEvent: () -> Unit, icon: Painter) {
+    Button(
+        onClick = onClickEvent,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = appColors.secondaryText
+        ),
+        contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp, start = 12.dp, end = 12.dp),
+        modifier = Modifier.border(
+            2.dp,
+            appColors.border.copy(alpha = 0.8f),
+            RoundedCornerShape(25.dp)
+        )
+    ) {
+
+        Text(
+            color = if (isDarkMode) ColorsLightMode().secondary2 else ColorsDarkMode().secondary2,
+            text = text
+        )
+
+        Image(
+            painter = icon,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .height(32.dp)
+                .padding(start = 2.dp, end = 8.dp)
         )
     }
 }

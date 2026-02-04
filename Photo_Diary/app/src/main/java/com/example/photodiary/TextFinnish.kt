@@ -25,8 +25,10 @@ class TextFinnish : TextBlocks {
 
     // Add tab
     override val add_new_entry = "Lisää Kuva"
-    override val add_title = "Nimi"
-    override val add_description = "Kuvaus"
-    override val add_choose_file = "Valitse tiedosto"
-    override val add_take_photo = "Ota kuva"
+    override val add_info = "Tiedot"
+    override val add_info_title = "Nimi"
+    override val add_info_description = "Kuvaus"
+    override val add_file = "Kuva"
+    override val add_file_choose = "Valitse tiedosto"
+    override val add_file_take_photo = "Ota kuva"
 }

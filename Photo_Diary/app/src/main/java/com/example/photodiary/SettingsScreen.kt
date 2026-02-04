@@ -1,35 +1,25 @@
 package com.example.photodiary
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 
@@ -48,7 +38,6 @@ fun SettingsCard(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .fillMaxHeight()
-                .padding(top = 20.dp)
                 .border(
                     3.dp,
                     appColors.primary2,
@@ -70,7 +59,7 @@ fun SetBody(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Uni
         contentAlignment = Alignment.Center
     ) {
 
-        TitleCard(appColors, appLanguage.title_settings, 6.dp, 0.dp)
+        TitleCard(appColors, appLanguage.title_settings, 6.dp, 0.dp, true)
 
         Column(
             modifier = Modifier.fillMaxSize(0.8f),
@@ -101,6 +90,13 @@ fun SetBody(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Uni
 }
 
 
+
+
+// -------------
+// - Dark Mode -
+// -------------
+
+
 @Composable
 fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: AppColors, appLanguage: TextBlocks, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
     ElevatedCard(
@@ -112,7 +108,7 @@ fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            TitleCard(appColors, appLanguage.settings_title_theme, 15.dp, 2.dp)
+            TitleCard(appColors, appLanguage.settings_title_theme, 15.dp, 2.dp, false)
             SetDarkModeButton(isDarkMode, onToggleDarkMode, appColors, appLanguage)
         }
     }
@@ -121,32 +117,27 @@ fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors
 
 @Composable
 fun SetDarkModeButton(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: AppColors, appLanguage: TextBlocks) {
-    // Dark mode button
-    Button(
-        onClick = onToggleDarkMode,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = appColors.secondaryText
-        )
-    ) {
-        Image(
-            painter = painterResource(
-                if (isDarkMode) R.drawable.icon_sun
-                else R.drawable.icon_moon
-            ),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .height(32.dp)
-                .padding(start = 2.dp, end = 8.dp)
-        )
-        Text(
-            color = if (isDarkMode) ColorsLightMode().secondary2 else ColorsDarkMode().secondary2,
-            text = if (isDarkMode) appLanguage.settings_button_theme_light else appLanguage.settings_button_theme_dark
-        )
-    }
+
+    // Button text
+    val text =
+        if (isDarkMode) appLanguage.settings_button_theme_light
+        else appLanguage.settings_button_theme_dark
+
+    // Button icon
+    val icon = painterResource(
+        if (isDarkMode) R.drawable.icon_sun
+        else R.drawable.icon_moon
+    )
+
+    SetButton(isDarkMode, appColors, text, onToggleDarkMode, icon)
 }
 
 
+
+
+// ------------
+// - Language -
+// ------------
 
 
 @Composable
@@ -160,7 +151,7 @@ fun SetLanguageCard(isDarkMode: Boolean, isEnglish: Boolean, onToggleLanguage: (
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            TitleCard(appColors, appLanguage.settings_title_language, 15.dp, 2.dp)
+            TitleCard(appColors, appLanguage.settings_title_language, 15.dp, 2.dp, false)
             SetLanguageButton(isDarkMode, isEnglish, onToggleLanguage, appColors, appLanguage)
         }
     }
@@ -171,29 +162,15 @@ fun SetLanguageCard(isDarkMode: Boolean, isEnglish: Boolean, onToggleLanguage: (
 
 @Composable
 fun SetLanguageButton(isDarkMode: Boolean, isEnglish: Boolean, onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks) {
-    // Dark mode button
-    Button(
-        onClick = onToggleLanguage,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = appColors.secondaryText
-        )
-    ) {
 
-        Image(
-            painter = painterResource(
-                if (isEnglish) R.drawable.flag_finnish
-                else R.drawable.flag_english
-            ),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .height(32.dp)
-                .padding(start = 2.dp, end = 8.dp)
-        )
+    // Button text
+    val text = appLanguage.settings_button_language
 
-        Text(
-            color = if (isDarkMode) ColorsLightMode().secondary2 else ColorsDarkMode().secondary2,
-            text = appLanguage.settings_button_language
-        )
-    }
+    // Button icon
+    val icon = painterResource(
+        if (isEnglish) R.drawable.flag_finnish
+        else R.drawable.flag_english
+    )
+
+    SetButton(isDarkMode, appColors, text, onToggleLanguage, icon)
 }

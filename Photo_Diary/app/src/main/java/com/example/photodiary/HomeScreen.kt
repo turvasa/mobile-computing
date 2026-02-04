@@ -63,7 +63,7 @@ fun SetBody(appColors: AppColors, appLanguage: TextBlocks) {
                 .clip(RoundedCornerShape(10.dp))
         ) {
             Box {
-                TitleCard(appColors, appLanguage.title_home, 3.dp, 0.dp)
+                TitleCard(appColors, appLanguage.title_home, 3.dp, 0.dp, true)
                 DisplayPhotos(appColors)
             }
         }
