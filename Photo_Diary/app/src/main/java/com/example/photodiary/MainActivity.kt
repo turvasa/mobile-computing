@@ -276,12 +276,12 @@ fun SetBodyCard(
 
         // Home
         composable(AppDestinations.HOME.route) {
-            HomeCard(appColors, appLanguage, diaryItemDAO, viewModel)
+            HomeCard(appColors, appLanguage, viewModel)
         }
 
         // Add
         composable(AppDestinations.ADD.route) {
-            AddNewCard(isDarkMode, appColors, appLanguage, diaryItemDAO, viewModel)
+            AddNewCard(isDarkMode, appColors, appLanguage, viewModel)
         }
     }
 }

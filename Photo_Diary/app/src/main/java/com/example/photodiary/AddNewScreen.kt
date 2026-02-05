@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import java.io.File
 
 
-private const val errorMessage = "[ERROR] - AddNew: "
 
 
 @Composable
@@ -105,21 +104,35 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
             //var temperature by remember { mutableStateOf("") }
             //var location by remember { mutableStateOf("") }
 
+            // Diary Item info errors
+            var titleError by remember { mutableStateOf<String?>(null) }
+            var descriptionError by remember { mutableStateOf<String?>(null) }
+            var imageUriError by remember { mutableStateOf<String?>(null) }
+            //var temperatureError by remember { mutableStateOf<String?>(null) }
+            //var locationError by remember { mutableStateOf<String?>(null) }
+
             SetInfoCard(
                 appColors, appLanguage,
                 colors, elevation, modifier,
                 title, description,
-                { title = it }, {description = it}
+                titleError, descriptionError,
+                { title = it; titleError = null },
+                { description = it; descriptionError = null }
             )
             SetImageGetter(
+                isDarkMode,
                 appColors, appLanguage,
                 colors, elevation, modifier,
-                imageUri, { imageUri = it }
+                imageUri, imageUriError,
+                { imageUri = it; imageUriError = null }
             )
             SetAddCard(
                 isDarkMode, appColors, appLanguage,
                 colors, elevation, modifier,
                 title, description, imageUri,
+                {titleError = appLanguage.error_mandatory_field},
+                {descriptionError = appLanguage.error_mandatory_field},
+                {imageUriError = appLanguage.error_mandatory_field},
                 viewModel
             )
         }
@@ -139,6 +152,7 @@ fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
     colors: CardColors, elevation: CardElevation, modifier: Modifier,
     title: String, description: String,
+    titleError: String?, descriptionError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
 ) {
     ElevatedCard(
@@ -151,7 +165,12 @@ fun SetInfoCard(
             contentAlignment = Alignment.Center
         ) {
             TitleCard(appColors, appLanguage.add_info, 15.dp, 2.dp, false)
-            SetInfoInputs(appColors, appLanguage, title, description, toggleTitle, toggleDescription)
+            SetInfoInputs(
+                appColors, appLanguage,
+                title, description,
+                titleError, descriptionError,
+                toggleTitle, toggleDescription
+            )
         }
     }
 }
@@ -161,6 +180,7 @@ fun SetInfoCard(
 fun SetInfoInputs(
     appColors: AppColors, appLanguage: TextBlocks,
     title: String, description: String,
+    titleError: String?, descriptionError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
 ) {
     Column(
@@ -177,6 +197,7 @@ fun SetInfoInputs(
             toggleTitle, 1,
             appLanguage.add_info_title,
             "The Scenery",
+            titleError,
             appColors
         )
 
@@ -186,6 +207,7 @@ fun SetInfoInputs(
             toggleDescription, 3,
             appLanguage.add_info_description,
             "Lorem ipsum dolor sit amet...",
+            descriptionError,
             appColors
         )
     }
@@ -198,6 +220,7 @@ fun SetInfoInput(
     toggle: (String) -> Unit,
     maxLines: Int, label: String,
     placeholder: String,
+    error: String?,
     appColors: AppColors
 ) {
     OutlinedTextField(
@@ -211,6 +234,7 @@ fun SetInfoInput(
             text = label,
             color = appColors.secondary3
         )},
+        isError = error != null,
         placeholder = { Text(
             text = placeholder,
             color = appColors.secondaryText,
@@ -222,8 +246,11 @@ fun SetInfoInput(
         ),
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = appColors.secondary2.copy(alpha = 0.6f),
-            errorBorderColor = Color.Red
-        )
+            errorBorderColor = Color.Red,
+        ),
+        supportingText = {
+            error?.let { Text(text = it, color = Color.Red) }
+        }
     )
 }
 
@@ -237,9 +264,11 @@ fun SetInfoInput(
 
 @Composable
 fun SetImageGetter(
+    isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     colors: CardColors, elevation: CardElevation, modifier: Modifier,
-    imageuri: Uri?, toggleImageUri: (Uri?) -> Unit
+    imageUri: Uri?, imageUriError: String?,
+    toggleImageUri: (Uri?) -> Unit
 ) {
     ElevatedCard(
         colors = colors,
@@ -251,18 +280,28 @@ fun SetImageGetter(
             contentAlignment = Alignment.Center
         ) {
             TitleCard(appColors, appLanguage.add_file, 15.dp, 2.dp, false)
+            SetAddFileButton(
+                isDarkMode, appColors, appLanguage,
+                imageUri, imageUriError,
+                toggleImageUri
+            )
         }
     }
 }
 
 
 @Composable
-fun SetAddFileButton(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks) {
+fun SetAddFileButton(
+    isDarkMode: Boolean,
+    appColors: AppColors, appLanguage: TextBlocks,
+    imageuri: Uri?, imageUriError: String?,
+    toggleImageUri: (Uri?) -> Unit
+) {
 
     // Button text
     val text = appLanguage.add_file_choose
 
-    val onClickEvent = { }//DatabaseMethods(diaryItemDAO).addDiaryItem(diaryItem) }
+    val onClickEvent = { }
 
     // Button icon
     val icon = painterResource(
@@ -285,7 +324,8 @@ fun SetAddFileButton(isDarkMode: Boolean, appColors: AppColors, appLanguage: Tex
 fun SetAddCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     colors: CardColors, elevation: CardElevation, modifier: Modifier,
-    itemTitle: String, itemDescription: String, itemUri: Uri?,
+    title: String, description: String, imageUri: Uri?,
+    titleError: (String) -> Unit, descriptionError: (String) -> Unit, imageUriError: (String) -> Unit,
     viewModel: DatabaseMethods
 ) {
     ElevatedCard(
@@ -301,8 +341,10 @@ fun SetAddCard(
 
             SetAddButton(
                 isDarkMode,appColors, appLanguage,
-                itemTitle, itemDescription, itemUri,
-                viewModel)
+                title, description, imageUri,
+                titleError, descriptionError, imageUriError,
+                viewModel
+            )
         }
     }
 }
@@ -312,22 +354,20 @@ fun SetAddCard(
 fun SetAddButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    itemTitle: String, itemDescription: String, itemUri: Uri?,
-    viewModel: DatabaseMethods) {
+    title: String, description: String, imageUri: Uri?,
+    titleError: (String) -> Unit, descriptionError: (String) -> Unit, imageUriError: (String) -> Unit,
+    viewModel: DatabaseMethods
+) {
 
     // Button text
     val text = appLanguage.add_create_new
 
     // Button click event
-    val onClickEvent = {
-        val diaryItem = DiaryItem(
-            title = itemTitle,
-            description = itemDescription,
-            imageUri = itemUri
-        )
-
-        viewModel.addDiaryItem(diaryItem)
-    }
+    val onClickEvent = getAddOnClickEvent(
+        title, description, imageUri,
+        titleError, descriptionError, imageUriError,
+        viewModel
+    )
 
     // Button icon
     val icon = painterResource(
@@ -336,4 +376,45 @@ fun SetAddButton(
     )
 
     SetButton(isDarkMode, appColors, text, onClickEvent, icon)
+}
+
+
+fun getAddOnClickEvent(
+    title: String, description: String, imageUri: Uri?,
+    titleError: (String) -> Unit, descriptionError: (String) -> Unit, imageUriError: (String) -> Unit,
+    viewModel: DatabaseMethods
+): () -> Unit {
+    return {
+        var hasError = false
+
+        // Check title validity
+        if (title.isEmpty()) {
+            titleError
+            hasError = true
+        }
+
+        // Check description validity
+        if (description.length > 50) {
+            descriptionError
+            hasError = true
+        }
+
+        // Check Uri validity
+        if (imageUri == null) {
+            imageUriError
+            hasError = true
+        }
+
+        // If everything is ok, send the info to database
+        if (!hasError) {
+            imageUri?.let { nonNullUri ->
+                val diaryItem = DiaryItem(
+                    title = title,
+                    description = description,
+                    imageUri = nonNullUri.toString()
+                )
+                viewModel.addDiaryItem(diaryItem)
+            }
+        }
+    }
 }

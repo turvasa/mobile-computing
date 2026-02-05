@@ -11,7 +11,7 @@ import java.io.File
 @Entity
 data class DiaryItem(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
-    @ColumnInfo(name = "imageUri") val imageUri: Uri,
+    @ColumnInfo(name = "imageUri") val imageUri: String,
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "description") val description: String?,
 

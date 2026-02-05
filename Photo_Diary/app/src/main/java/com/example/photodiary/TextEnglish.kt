@@ -33,4 +33,9 @@ class TextEnglish : TextBlocks {
     override val add_file = "Image"
     override val add_file_choose = "Choose file"
     override val add_file_take_photo = "Take photo"
+
+    // Errors
+    override val error_mandatory_field = "Mandatory field!"
+    override val error_exceeds_maximum_limit = "Exceeds the maximum char limit: "
+    override val error_must_be_integer = "Value must be integer!"
 }

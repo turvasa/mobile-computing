@@ -34,4 +34,9 @@ interface TextBlocks {
     val add_file_choose: String
     val add_file_take_photo: String
 
+    // Errors
+    val error_mandatory_field: String
+    val error_exceeds_maximum_limit: String
+    val error_must_be_integer: String
+
 }
