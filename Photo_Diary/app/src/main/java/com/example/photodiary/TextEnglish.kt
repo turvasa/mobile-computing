@@ -38,4 +38,9 @@ class TextEnglish : TextBlocks {
     override val error_mandatory_field = "Mandatory field!"
     override val error_exceeds_maximum_limit = "Exceeds the maximum char limit: "
     override val error_must_be_integer = "Value must be integer!"
+
+    // Others
+    override val loading = "Loading..."
+    override val edit = "Edit"
+    override val details = "Details"
 }

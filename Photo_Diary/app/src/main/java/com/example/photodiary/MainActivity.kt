@@ -148,8 +148,7 @@ fun PhotoDiaryApp(db: AppDatabase) {
             { isDarkMode = !isDarkMode },
             { isEnglish = !isEnglish },
             appColors, appLanguage,
-            diaryItemDAO, viewModel,
-            innerPadding
+            viewModel, innerPadding
         )
     }
 }
@@ -259,7 +258,6 @@ fun SetBodyCard(
     onToggleLanguage: () -> Unit,
     appColors: AppColors,
     appLanguage: TextBlocks,
-    diaryItemDAO: DiaryItemDAO,
     viewModel: DatabaseMethods,
     innerPadding: PaddingValues
 ) {
@@ -271,17 +269,29 @@ fun SetBodyCard(
 
         // Settings
         composable(AppDestinations.SETTINGS.route) {
-            SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors, appLanguage, diaryItemDAO, viewModel)
+            SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors, appLanguage)
         }
 
         // Home
         composable(AppDestinations.HOME.route) {
-            HomeCard(appColors, appLanguage, viewModel)
+            HomeCard(appColors, appLanguage, viewModel, navController)
         }
 
         // Add
         composable(AppDestinations.ADD.route) {
             AddNewCard(isDarkMode, appColors, appLanguage, viewModel)
+        }
+
+        // Detailed image
+        composable("imageDetail/{id}") { entry ->
+            val item = entry.arguments?.getString("id")!!.toInt()
+            ImageDetailCard(appColors, appLanguage, item, viewModel)
+        }
+
+        // Edit image
+        composable("imageEditDetail/{id}") { entry ->
+            val item = entry.arguments?.getString("id")!!.toInt()
+            ImageEditDetailCard(appColors, appLanguage, item, viewModel)
         }
     }
 }
@@ -349,7 +359,7 @@ fun SetButton(
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .height(32.dp)
-                .padding(start = 2.dp, end = 8.dp)
+                .padding(start = 4.dp)
         )
     }
 }

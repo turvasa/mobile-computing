@@ -37,4 +37,9 @@ class TextFinnish : TextBlocks {
     override val error_mandatory_field = "Pakollinen tieto!"
     override val error_exceeds_maximum_limit = "Ylittää suurimman sallitun merkki määrän: "
     override val error_must_be_integer = "Täytyy olla kokonaisluku!!"
+
+    // Others
+    override val loading = "Ladataan..."
+    override val edit = "Muokkaa"
+    override val details = "Tiedot"
 }

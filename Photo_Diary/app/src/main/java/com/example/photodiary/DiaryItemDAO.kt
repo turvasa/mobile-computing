@@ -14,7 +14,7 @@ interface DiaryItemDAO {
     fun getAll(): Flow<List<DiaryItem>>
 
     @Query("SELECT * FROM DiaryItem WHERE id = :id")
-    fun findByID(id: Int): Flow<DiaryItem>
+    fun findByID(id: Int): Flow<DiaryItem?>
 
     @Insert
     suspend fun insert(diaryItem: DiaryItem)

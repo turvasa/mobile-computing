@@ -39,4 +39,9 @@ interface TextBlocks {
     val error_exceeds_maximum_limit: String
     val error_must_be_integer: String
 
+    // Others
+    val loading: String
+    val edit: String
+    val details: String
+
 }

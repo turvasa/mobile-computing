@@ -4,12 +4,16 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -32,27 +36,35 @@ fun SettingsCard(
     appColors: AppColors,
     appLanguage: TextBlocks
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 30.dp, bottom = 30.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = appColors.primary.copy(alpha = 0.8f)
-            ),
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column (
             modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .fillMaxHeight()
-                .border(
-                    3.dp,
-                    appColors.primary2,
-                    RoundedCornerShape(10.dp)
-                )
-                .clip(RoundedCornerShape(10.dp))
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()) // Makes the column scrollable
+                .padding(top = 30.dp, bottom = 30.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SetBody(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors, appLanguage)
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = appColors.primary.copy(alpha = 0.8f)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .fillMaxHeight()
+                    .border(
+                        3.dp,
+                        appColors.primary2,
+                        RoundedCornerShape(10.dp)
+                    )
+                    .clip(RoundedCornerShape(10.dp))
+                    .wrapContentHeight()
+            ) {
+                SetBody(
+                    isDarkMode, isEnglish,
+                    onToggleDarkMode, onToggleLanguage,
+                    appColors, appLanguage
+                )
+            }
         }
     }
 
@@ -60,18 +72,25 @@ fun SettingsCard(
 
 
 @Composable
-fun SetBody(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks) {
+fun SetBody(
+    isDarkMode: Boolean, isEnglish: Boolean,
+    onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
+    appColors: AppColors, appLanguage: TextBlocks
+) {
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        contentAlignment = Alignment.TopCenter
     ) {
 
         TitleCard(appColors, appLanguage.title_settings, 6.dp, 0.dp, true)
 
         Column(
-            modifier = Modifier.fillMaxSize(0.8f),
+            modifier = Modifier
+                .wrapContentHeight()
+                .padding(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
         ){
             // Formatting for setting cards
             val colors = CardDefaults.cardColors(
@@ -91,6 +110,9 @@ fun SetBody(isDarkMode: Boolean, isEnglish: Boolean, onToggleDarkMode: () -> Uni
                 .clip(RoundedCornerShape(20.dp))
 
             SetDarkModeCard(isDarkMode, onToggleDarkMode, appColors, appLanguage, colors, elevation, modifier)
+
+            Spacer(Modifier.height(20.dp))
+
             SetLanguageCard(isDarkMode, isEnglish, onToggleLanguage, appColors, appLanguage, colors, elevation, modifier)
         }
     }
