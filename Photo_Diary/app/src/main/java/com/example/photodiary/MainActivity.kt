@@ -320,7 +320,11 @@ fun BoxScope.TitleCard(appColors: AppColors, text: String, rounding: Dp, offset:
 
 
 @Composable
-fun SetButton(isDarkMode: Boolean, appColors: AppColors, text: String, onClickEvent: () -> Unit, icon: Painter) {
+fun SetButton(
+    isDarkMode: Boolean,
+    appColors: AppColors, text: String,
+    onClickEvent: () -> Unit, icon: Painter
+) {
     Button(
         onClick = onClickEvent,
         colors = ButtonDefaults.buttonColors(

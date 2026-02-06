@@ -30,9 +30,7 @@ fun SettingsCard(
     onToggleDarkMode: () -> Unit,
     onToggleLanguage: () -> Unit,
     appColors: AppColors,
-    appLanguage: TextBlocks,
-    diaryItemDAO: DiaryItemDAO,
-    viewModel: DatabaseMethods
+    appLanguage: TextBlocks
 ) {
     Box(
         modifier = Modifier

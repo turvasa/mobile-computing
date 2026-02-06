@@ -1,7 +1,12 @@
 package com.example.photodiary
 
-import android.graphics.BitmapFactory
+import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +37,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toFile
 import java.io.File
 
 
@@ -82,17 +88,21 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
             verticalArrangement = Arrangement.SpaceEvenly
         ){
             // Formatting for setting cards
-            val colors = CardDefaults.cardColors(
-                containerColor = appColors.primary
-            )
-            val elevation = CardDefaults.cardElevation(
-                defaultElevation = 20.dp
-            )
+            val colors = CardDefaults.cardColors(containerColor = appColors.primary)
+            val elevation = CardDefaults.cardElevation(defaultElevation = 20.dp)
             val modifier = Modifier
                 .fillMaxWidth()
                 .border(
                     2.dp,
                     appColors.primary2,
+                    RoundedCornerShape(20.dp)
+                )
+                .clip(RoundedCornerShape(20.dp))
+            val errorModifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    2.dp,
+                    Color.Red,
                     RoundedCornerShape(20.dp)
                 )
                 .clip(RoundedCornerShape(20.dp))
@@ -111,9 +121,10 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
             //var temperatureError by remember { mutableStateOf<String?>(null) }
             //var locationError by remember { mutableStateOf<String?>(null) }
 
+            // Set the body
             SetInfoCard(
                 appColors, appLanguage,
-                colors, elevation, modifier,
+                colors, elevation, modifier, errorModifier,
                 title, description,
                 titleError, descriptionError,
                 { title = it; titleError = null },
@@ -122,7 +133,7 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
             SetImageGetter(
                 isDarkMode,
                 appColors, appLanguage,
-                colors, elevation, modifier,
+                colors, elevation, modifier, errorModifier,
                 imageUri, imageUriError,
                 { imageUri = it; imageUriError = null }
             )
@@ -150,7 +161,7 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
 @Composable
 fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
-    colors: CardColors, elevation: CardElevation, modifier: Modifier,
+    colors: CardColors, elevation: CardElevation, modifier: Modifier, errorModifier: Modifier,
     title: String, description: String,
     titleError: String?, descriptionError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
@@ -158,7 +169,9 @@ fun SetInfoCard(
     ElevatedCard(
         colors = colors,
         elevation = elevation,
-        modifier = modifier.fillMaxHeight(0.4f)
+        modifier =
+            if (titleError != null && descriptionError != null) modifier else errorModifier
+            .fillMaxHeight(0.4f)
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -193,7 +206,7 @@ fun SetInfoInputs(
 
         // Title
         SetInfoInput(
-            0.3f, title,
+            0.35f, title,
             toggleTitle, 1,
             appLanguage.add_info_title,
             "The Scenery",
@@ -203,7 +216,7 @@ fun SetInfoInputs(
 
         // Description
         SetInfoInput(
-            0.75f, description,
+            0.8f, description,
             toggleDescription, 3,
             appLanguage.add_info_description,
             "Lorem ipsum dolor sit amet...",
@@ -223,6 +236,7 @@ fun SetInfoInput(
     error: String?,
     appColors: AppColors
 ) {
+
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth(0.9f)
@@ -249,7 +263,11 @@ fun SetInfoInput(
             errorBorderColor = Color.Red,
         ),
         supportingText = {
-            error?.let { Text(text = it, color = Color.Red) }
+            error?.let { Text(
+                text = it,
+                color = Color.Red,
+                fontSize = 13.sp
+            ) }
         }
     )
 }
@@ -266,24 +284,29 @@ fun SetInfoInput(
 fun SetImageGetter(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    colors: CardColors, elevation: CardElevation, modifier: Modifier,
+    colors: CardColors, elevation: CardElevation, modifier: Modifier, errorModifier: Modifier,
     imageUri: Uri?, imageUriError: String?,
     toggleImageUri: (Uri?) -> Unit
 ) {
     ElevatedCard(
         colors = colors,
         elevation = elevation,
-        modifier = modifier.fillMaxHeight(0.5f)
+        modifier =
+            if (imageUriError != null) modifier else errorModifier
+            .fillMaxHeight(0.5f)
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             TitleCard(appColors, appLanguage.add_file, 15.dp, 2.dp, false)
-            SetAddFileButton(
-                isDarkMode, appColors, appLanguage,
-                imageUri, imageUriError,
-                toggleImageUri
+
+            SetAddFileButton(isDarkMode, appColors, appLanguage, toggleImageUri)
+
+            Text(
+                text = if (imageUriError == null) imageUri.toString() else imageUriError,
+                color = appColors.primary2,
+                fontSize = 15.sp
             )
         }
     }
@@ -294,14 +317,23 @@ fun SetImageGetter(
 fun SetAddFileButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    imageuri: Uri?, imageUriError: String?,
     toggleImageUri: (Uri?) -> Unit
 ) {
 
     // Button text
     val text = appLanguage.add_file_choose
 
-    val onClickEvent = { }
+    // On Click event
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        toggleImageUri(uri)
+    }
+    val onClickEvent = {
+        pickMedia.launch(
+            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+        )
+    }
 
     // Button icon
     val icon = painterResource(
@@ -407,14 +439,28 @@ fun getAddOnClickEvent(
 
         // If everything is ok, send the info to database
         if (!hasError) {
-            imageUri?.let { nonNullUri ->
+            imageUri?.let { nonNullImageUri ->
+                val savedImagePath = saveTheImage(nonNullImageUri)
                 val diaryItem = DiaryItem(
                     title = title,
                     description = description,
-                    imageUri = nonNullUri.toString()
+                    imagePath = savedImagePath
                 )
                 viewModel.addDiaryItem(diaryItem)
             }
         }
     }
+}
+
+
+fun saveTheImage(imageUri: Uri) : String {
+
+    val imageFile = imageUri.toFile()
+    val imageName = imageFile.name
+    val savedImagePath = "images/$imageName"
+    val savedImageFile = File(savedImagePath)
+
+    imageFile.copyTo(savedImageFile, true, DEFAULT_BUFFER_SIZE)
+
+    return savedImagePath
 }
