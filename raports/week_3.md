@@ -88,3 +88,8 @@ I used the RoomDatabase to store the information and when the navigation hits th
 
 ## Specifically for the image, what is a good way to store the data such that you can load it as soon as the app starts?
 I basically answered to this previously, but it's best to store the image file to some directory, where you can access. Then just store the images path (name is usually enough) to the database.
+
+
+
+## Links
+GitHub: https://github.com/turvasa/mobile-computing
