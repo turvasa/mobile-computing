@@ -1,35 +1,24 @@
 package com.example.photodiary
 
 import android.content.Context
-import android.content.Intent
+import android.hardware.Sensor
+import android.health.connect.datatypes.units.Temperature
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.magnifier
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -48,46 +37,42 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toFile
 import coil3.compose.AsyncImage
 import java.io.File
 
 
 
-
 @Composable
 fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, viewModel: DatabaseMethods) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()) // Makes the column scrollable
-                .padding(top = 30.dp, bottom = 30.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = appColors.primary.copy(alpha = 0.8f)
-                ),
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .border(
-                        3.dp,
-                        appColors.primary2,
-                        RoundedCornerShape(10.dp)
-                    )
-                    .clip(RoundedCornerShape(10.dp))
-                    .wrapContentHeight()
-            ) {
-                SetBody(isDarkMode, appColors, appLanguage, viewModel)
-            }
-        }
+    SetTabLayout(appColors) {
+        SetBody(isDarkMode, appColors, appLanguage, viewModel)
     }
 }
 
 
 @Composable
 fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, viewModel: DatabaseMethods) {
+    // Formatting for setting cards
+    val cardStyle = AppCardStyle(
+        colors = CardDefaults.cardColors(containerColor = appColors.primary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(2.dp, appColors.primary2, RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp))
+    )
+
+    // Diary Item information
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val weather = ""
+    //var location by remember { mutableStateOf("") }
+
+    // Diary Item info errors
+    var titleError by remember { mutableStateOf<String?>(null) }
+    var imageUriError by remember { mutableStateOf<String?>(null) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -103,63 +88,73 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
                 .padding(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
-            // Formatting for setting cards
-            val colors = CardDefaults.cardColors(containerColor = appColors.primary)
-            val elevation = CardDefaults.cardElevation(defaultElevation = 20.dp)
-            val modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    2.dp,
-                    appColors.primary2,
-                    RoundedCornerShape(20.dp)
-                )
-                .clip(RoundedCornerShape(20.dp))
 
-            // Diary Item information
-            var title by remember { mutableStateOf("") }
-            var description by remember { mutableStateOf("") }
-            var imageUri by remember { mutableStateOf<Uri?>(null) }
-            //var temperature by remember { mutableStateOf("") }
-            //var location by remember { mutableStateOf("") }
-
-            // Diary Item info errors
-            var titleError by remember { mutableStateOf<String?>(null) }
-            var descriptionError by remember { mutableStateOf<String?>(null) }
-            var imageUriError by remember { mutableStateOf<String?>(null) }
-            //var temperatureError by remember { mutableStateOf<String?>(null) }
-            //var locationError by remember { mutableStateOf<String?>(null) }
-
-            // Set the body
             SetInfoCard(
-                appColors, appLanguage,
-                colors, elevation, modifier,
+                appColors, appLanguage, cardStyle,
                 title, description,
-                titleError, descriptionError,
+                titleError,
                 { title = it; titleError = null },
-                { description = it; descriptionError = null }
+                { description = it }
             )
             Spacer(Modifier.height(20.dp))
 
             SetImageGetter(
                 isDarkMode,
-                appColors, appLanguage,
-                colors, elevation, modifier,
+                appColors, appLanguage, cardStyle,
                 imageUri, imageUriError,
                 { imageUri = it; imageUriError = null }
             )
             Spacer(Modifier.height(20.dp))
 
             SetAddCard(
-                isDarkMode, appColors, appLanguage,
-                colors, elevation, modifier,
-                title, description, imageUri,
+                isDarkMode, appColors, appLanguage, cardStyle,
+                title, description, imageUri, weather,
                 {titleError = appLanguage.error_mandatory_field},
-                {descriptionError = appLanguage.error_mandatory_field},
                 {imageUriError = appLanguage.error_mandatory_field},
-                viewModel
+                { title = ""; description = ""; imageUri = null },
+                (titleError != null || imageUri != null)
+                , viewModel
             )
         }
     }
+}
+
+
+
+
+// ------------
+// - Generals -
+// ------------
+
+
+@Composable
+fun getCorrectCardStyle(cardStyle: AppCardStyle, isError: Boolean) : AppCardStyle {
+    val correctStyle = (
+        if (!isError) cardStyle
+        else cardStyle.copy(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    2.dp,
+                    Color.Red,
+                    RoundedCornerShape(20.dp)
+                )
+                .clip(RoundedCornerShape(20.dp))
+        )
+    )
+
+    return correctStyle
+}
+
+
+@Composable
+fun DisplayErrorMessage(appColors: AppColors, error: String) {
+    Spacer(Modifier.height(20.dp))
+    Text(
+        text = error,
+        color = Color.Red,
+        fontSize = 13.sp
+    )
 }
 
 
@@ -173,28 +168,22 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
 @Composable
 fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
-    colors: CardColors, elevation: CardElevation, modifier: Modifier,
+    cardStyle: AppCardStyle,
     title: String, description: String,
-    titleError: String?, descriptionError: String?,
+    titleError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
 ) {
-    ElevatedCard(
-        colors = colors,
-        elevation = elevation,
-        modifier = modifier
+    SetCardLayout(
+        appColors = appColors,
+        title = appLanguage.add_info,
+        cardStyle = getCorrectCardStyle(cardStyle, (titleError != null))
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            TitleCard(appColors, appLanguage.add_info, 15.dp, 2.dp, false)
-            SetInfoInputs(
-                appColors, appLanguage,
-                title, description,
-                titleError, descriptionError,
-                toggleTitle, toggleDescription
-            )
-        }
+        SetInfoInputs(
+            appColors, appLanguage,
+            title, description,
+            titleError,
+            toggleTitle, toggleDescription
+        )
     }
 }
 
@@ -203,36 +192,29 @@ fun SetInfoCard(
 fun SetInfoInputs(
     appColors: AppColors, appLanguage: TextBlocks,
     title: String, description: String,
-    titleError: String?, descriptionError: String?,
+    titleError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .padding(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
 
-        // Title
-        SetInfoInput(
-            title,
-            toggleTitle, 1,
-            appLanguage.add_info_title,
-            "The Scenery",
-            titleError,
-            appColors
-        )
+    // Title
+    SetInfoInput(
+        title,
+        toggleTitle, 1,
+        appLanguage.add_info_title,
+        "The Scenery",
+        titleError,
+        appColors
+    )
 
-        // Description
-        SetInfoInput(
-            description,
-            toggleDescription, 3,
-            appLanguage.add_info_description,
-            "Lorem ipsum dolor sit amet...",
-            descriptionError,
-            appColors
-        )
-    }
+    // Description
+    SetInfoInput(
+        description,
+        toggleDescription, 3,
+        appLanguage.add_info_description,
+        "Lorem ipsum dolor sit amet...",
+        null,
+        appColors
+    )
 }
 
 
@@ -276,7 +258,7 @@ fun SetInfoInput(
             error?.let { Text(
                 text = it,
                 color = Color.Red,
-                fontSize = 15.sp
+                fontSize = 13.sp
             ) }
         }
     )
@@ -294,55 +276,25 @@ fun SetInfoInput(
 fun SetImageGetter(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    colors: CardColors, elevation: CardElevation, modifier: Modifier,
+    cardStyle: AppCardStyle,
     imageUri: Uri?, imageUriError: String?,
     toggleImageUri: (Uri?) -> Unit
 ) {
-    val context = LocalContext.current
-    val errorModifier = Modifier
-        .fillMaxWidth()
-        .border(
-            2.dp,
-            Color.Red,
-            RoundedCornerShape(20.dp)
-        )
-        .clip(RoundedCornerShape(20.dp))
-
-    ElevatedCard(
-        colors = colors,
-        elevation = elevation,
-        modifier =
-            if (imageUriError == null) modifier
-            else errorModifier
-
+    SetCardLayout(
+        appColors = appColors,
+        title = appLanguage.add_file,
+        cardStyle = getCorrectCardStyle(cardStyle, (imageUriError != null))
     ) {
-        Box(
-            contentAlignment = Alignment.TopCenter,
-            modifier = Modifier.wrapContentHeight()
-        ) {
-            TitleCard(
-                appColors, appLanguage.add_file,
-                15.dp, 2.dp, false
-            )
+        SetAddFileButton(isDarkMode, appColors, appLanguage, toggleImageUri)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                SetAddFileButton(isDarkMode, appColors, appLanguage, toggleImageUri)
+        // Given Image
+        if (imageUri != null) {
+            DisplayUriImage(appColors, imageUri)
+        }
 
-                // Given Image
-                if (imageUri != null) {
-                    DisplayUriImage(appColors, imageUri)
-                }
-
-                // Error message
-                if (imageUriError != null) {
-                    DisplayImageErrorMessage(appColors, imageUriError)
-                }
-            }
+        // Error message
+        if (imageUriError != null) {
+            DisplayErrorMessage(appColors, imageUriError)
         }
     }
 }
@@ -406,20 +358,37 @@ fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
 }
 
 
-@Composable
-fun DisplayImageErrorMessage(appColors: AppColors, imageUriError: String?) {
-    Spacer(Modifier.height(20.dp))
 
-    // Error message
-    val error = (
-            if (imageUriError != null) imageUriError
-            else ""
-            )
-    Text(
-        text = error,
-        color = appColors.primary2,
-        fontSize = 10.sp
-    )
+
+// -----------
+// - Weather -
+// -----------
+
+
+fun getWeatherFromAPI(isEnglish: Boolean) : Weather {
+
+}
+
+
+@Composable
+fun SetWeatherCard(
+    weather: Weather,
+    appColors: AppColors, appLanguage: TextBlocks,
+    cardStyle: AppCardStyle
+) {
+    SetCardLayout(
+        appColors = appColors,
+        title = appLanguage.add_weather,
+        cardStyle = cardStyle
+    ){
+        Text(
+            text =
+                if (weather.isEmpty()) appLanguage.error_not_available
+                else weather.toString(),
+            fontSize = 18.sp,
+            color = appColors.secondary3
+        )
+    }
 }
 
 
@@ -433,29 +402,24 @@ fun DisplayImageErrorMessage(appColors: AppColors, imageUriError: String?) {
 @Composable
 fun SetAddCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    colors: CardColors, elevation: CardElevation, modifier: Modifier,
-    title: String, description: String, imageUri: Uri?,
-    titleError: (String) -> Unit, descriptionError: (String) -> Unit, imageUriError: (String) -> Unit,
+    cardStyle: AppCardStyle,
+    title: String, description: String, imageUri: Uri?, weather: String?,
+    titleError: (String) -> Unit, imageUriError: (String) -> Unit,
+    zeroInfoFields: () -> Unit, isError: Boolean,
     viewModel: DatabaseMethods
 ) {
-    ElevatedCard(
-        colors = colors,
-        elevation = elevation,
-        modifier = modifier
+    SetCardLayout(
+        appColors = appColors,
+        title = appLanguage.add_create,
+        cardStyle = cardStyle
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.wrapContentHeight()
-        ) {
-            TitleCard(appColors, appLanguage.add_create, 15.dp, 2.dp, false)
-
-            SetAddButton(
-                isDarkMode,appColors, appLanguage,
-                title, description, imageUri,
-                titleError, descriptionError, imageUriError,
-                viewModel
-            )
-        }
+        SetAddButton(
+            isDarkMode, appColors, appLanguage,
+            title, description, imageUri, weather,
+            titleError, imageUriError,
+            zeroInfoFields, isError,
+            viewModel
+        )
     }
 }
 
@@ -464,8 +428,9 @@ fun SetAddCard(
 fun SetAddButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    title: String, description: String, imageUri: Uri?,
-    titleError: (String) -> Unit, descriptionError: (String) -> Unit, imageUriError: (String) -> Unit,
+    title: String, description: String, imageUri: Uri?, weather: String?,
+    titleError: (String) -> Unit, imageUriError: (String) -> Unit,
+    zeroInfoFields: () -> Unit, isError: Boolean,
     viewModel: DatabaseMethods
 ) {
     // Context
@@ -477,9 +442,9 @@ fun SetAddButton(
     // Button click event
     val onClickEvent = getAddOnClickEvent(
         context, appLanguage,
-        title, description, imageUri,
-        titleError, descriptionError, imageUriError,
-        viewModel
+        title, description, imageUri, weather,
+        titleError, imageUriError,
+        zeroInfoFields, viewModel
     )
 
     // Button icon
@@ -488,22 +453,21 @@ fun SetAddButton(
         else R.drawable.icon_add_light
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 40.dp, bottom = 40.dp, start = 10.dp, end = 10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        SetButton(isDarkMode, appColors, text, onClickEvent, icon)
+    SetButton(isDarkMode, appColors, text, onClickEvent, icon)
+
+    // Display error message
+    if (isError) {
+        DisplayErrorMessage(appColors, appLanguage.error_check)
     }
 }
 
 
+
 fun getAddOnClickEvent(
     context: Context, appLanguage: TextBlocks,
-    title: String, description: String, imageUri: Uri?,
-    titleError: (String) -> Unit, descriptionError: (String) -> Unit, imageUriError: (String) -> Unit,
-    viewModel: DatabaseMethods
+    title: String, description: String, imageUri: Uri?, weather: Weather,
+    titleError: (String) -> Unit, imageUriError: (String) -> Unit,
+    zeroInfoFields: () -> Unit, viewModel: DatabaseMethods
 ): () -> Unit {
     return {
         var hasError = false
@@ -527,10 +491,15 @@ fun getAddOnClickEvent(
                 val diaryItem = DiaryItem(
                     title = title,
                     description = description,
-                    imageName = savedImageName
+                    imageName = savedImageName,
+                    temperature = weather.temperature,
+                    weather = weather.weather
                 )
                 viewModel.addDiaryItem(diaryItem)
             }
+
+            // Make info files empty
+            zeroInfoFields()
         }
     }
 }

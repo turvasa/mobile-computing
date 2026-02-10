@@ -33,15 +33,19 @@ interface TextBlocks {
     val add_file: String
     val add_file_choose: String
     val add_file_take_photo: String
+    val add_weather: String
 
     // Errors
     val error_mandatory_field: String
     val error_exceeds_maximum_limit: String
     val error_must_be_integer: String
+    val error_check: String
+    val error_not_available: String
 
     // Others
     val loading: String
     val edit: String
     val details: String
-
+    val update: String
+    val delete: String
 }

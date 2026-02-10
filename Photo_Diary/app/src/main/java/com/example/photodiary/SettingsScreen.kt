@@ -1,20 +1,15 @@
 package com.example.photodiary
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
@@ -23,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
@@ -36,36 +32,12 @@ fun SettingsCard(
     appColors: AppColors,
     appLanguage: TextBlocks
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()) // Makes the column scrollable
-                .padding(top = 30.dp, bottom = 30.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = appColors.primary.copy(alpha = 0.8f)
-                ),
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .fillMaxHeight()
-                    .border(
-                        3.dp,
-                        appColors.primary2,
-                        RoundedCornerShape(10.dp)
-                    )
-                    .clip(RoundedCornerShape(10.dp))
-                    .wrapContentHeight()
-            ) {
-                SetBody(
-                    isDarkMode, isEnglish,
-                    onToggleDarkMode, onToggleLanguage,
-                    appColors, appLanguage
-                )
-            }
-        }
+    SetTabLayout(appColors) {
+        SetBody(
+            isDarkMode, isEnglish,
+            onToggleDarkMode, onToggleLanguage,
+            appColors, appLanguage
+        )
     }
 
 }
@@ -121,13 +93,19 @@ fun SetBody(
 
 
 
-// -------------
-// - Dark Mode -
-// -------------
+// ------------------
+// - General Layout -
+// ------------------
 
 
 @Composable
-fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: AppColors, appLanguage: TextBlocks, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
+fun SetSettingCard(
+    isDarkMode: Boolean, cardTitle: String,
+    buttonText: String, buttonIcon: Painter,
+    settingFunction: () -> Unit,
+    appColors: AppColors,
+    colors: CardColors, elevation: CardElevation, modifier: Modifier
+) {
     ElevatedCard(
         colors = colors,
         elevation = elevation,
@@ -137,28 +115,44 @@ fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            TitleCard(appColors, appLanguage.settings_title_theme, 15.dp, 2.dp, false)
-            SetDarkModeButton(isDarkMode, onToggleDarkMode, appColors, appLanguage)
+            TitleCard(appColors, cardTitle, 15.dp, 2.dp, false)
+            SetButton(isDarkMode, appColors, buttonText, settingFunction, buttonIcon)
         }
     }
 }
 
 
+
+
+// -------------
+// - Dark Mode -
+// -------------
+
+
 @Composable
-fun SetDarkModeButton(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: AppColors, appLanguage: TextBlocks) {
+fun SetDarkModeCard(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColors: AppColors, appLanguage: TextBlocks, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
+
+    // Card title
+    val cardTitle = appLanguage.settings_title_theme
 
     // Button text
-    val text =
+    val buttonText =
         if (isDarkMode) appLanguage.settings_button_theme_light
         else appLanguage.settings_button_theme_dark
 
     // Button icon
-    val icon = painterResource(
+    val buttonIcon = painterResource(
         if (isDarkMode) R.drawable.icon_sun
         else R.drawable.icon_moon
     )
 
-    SetButton(isDarkMode, appColors, text, onToggleDarkMode, icon)
+    SetSettingCard(
+        isDarkMode, cardTitle,
+        buttonText, buttonIcon,
+        onToggleDarkMode,
+        appColors,
+        colors, elevation, modifier
+    )
 }
 
 
@@ -171,35 +165,24 @@ fun SetDarkModeButton(isDarkMode: Boolean, onToggleDarkMode: () -> Unit, appColo
 
 @Composable
 fun SetLanguageCard(isDarkMode: Boolean, isEnglish: Boolean, onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks, colors: CardColors, elevation: CardElevation, modifier: Modifier) {
-    ElevatedCard(
-        colors = colors,
-        elevation = elevation,
-        modifier = modifier
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            TitleCard(appColors, appLanguage.settings_title_language, 15.dp, 2.dp, false)
-            SetLanguageButton(isDarkMode, isEnglish, onToggleLanguage, appColors, appLanguage)
-        }
-    }
 
-
-}
-
-
-@Composable
-fun SetLanguageButton(isDarkMode: Boolean, isEnglish: Boolean, onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks) {
+    // Card title
+    val cardTitle = appLanguage.settings_title_language
 
     // Button text
-    val text = appLanguage.settings_button_language
+    val buttonText = appLanguage.settings_button_language
 
     // Button icon
-    val icon = painterResource(
+    val buttonIcon = painterResource(
         if (isEnglish) R.drawable.flag_finnish
         else R.drawable.flag_english
     )
 
-    SetButton(isDarkMode, appColors, text, onToggleLanguage, icon)
+    SetSettingCard(
+        isDarkMode, cardTitle,
+        buttonText, buttonIcon,
+        onToggleLanguage,
+        appColors,
+        colors, elevation, modifier
+    )
 }

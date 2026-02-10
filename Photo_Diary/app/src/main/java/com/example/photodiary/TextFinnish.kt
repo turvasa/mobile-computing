@@ -32,14 +32,19 @@ class TextFinnish : TextBlocks {
     override val add_file = "Kuva"
     override val add_file_choose = "Valitse tiedosto"
     override val add_file_take_photo = "Ota kuva"
+    override val add_weather = "Sää"
 
     // Errors
     override val error_mandatory_field = "Pakollinen tieto!"
     override val error_exceeds_maximum_limit = "Ylittää suurimman sallitun merkki määrän: "
     override val error_must_be_integer = "Täytyy olla kokonaisluku!!"
+    override val error_check = "Kelvottomia arvoja annettu! Tarkista kaikki kentät."
+    override val error_not_available = "Ei saatavilla."
 
     // Others
     override val loading = "Ladataan..."
     override val edit = "Muokkaa"
     override val details = "Tiedot"
+    override val update = "Päivitä"
+    override val delete = "Poista"
 }
