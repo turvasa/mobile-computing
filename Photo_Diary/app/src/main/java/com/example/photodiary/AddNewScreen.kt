@@ -1,9 +1,8 @@
 package com.example.photodiary
 
 import android.content.Context
-import android.hardware.Sensor
-import android.health.connect.datatypes.units.Temperature
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +22,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,15 +44,15 @@ import java.io.File
 
 
 @Composable
-fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, viewModel: DatabaseMethods) {
+fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
     SetTabLayout(appColors) {
-        SetBody(isDarkMode, appColors, appLanguage, viewModel)
+        SetBody(isDarkMode, appColors, appLanguage, weatherViewModel, databaseViewModel)
     }
 }
 
 
 @Composable
-fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, viewModel: DatabaseMethods) {
+fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
     // Formatting for setting cards
     val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(containerColor = appColors.primary),
@@ -66,12 +67,17 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    val weather = ""
+    val weather by weatherViewModel.weather.collectAsState(initial = null)
     //var location by remember { mutableStateOf("") }
 
     // Diary Item info errors
     var titleError by remember { mutableStateOf<String?>(null) }
     var imageUriError by remember { mutableStateOf<String?>(null) }
+
+    // Load the weather
+    LaunchedEffect(Unit) {
+        weatherViewModel.loadWeather()
+    }
 
     Box(
         modifier = Modifier
@@ -106,15 +112,29 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
             )
             Spacer(Modifier.height(20.dp))
 
-            SetAddCard(
-                isDarkMode, appColors, appLanguage, cardStyle,
-                title, description, imageUri, weather,
-                {titleError = appLanguage.error_mandatory_field},
-                {imageUriError = appLanguage.error_mandatory_field},
-                { title = ""; description = ""; imageUri = null },
-                (titleError != null || imageUri != null)
-                , viewModel
-            )
+            Log.e("API", "Other cards formed")
+
+            weather?.let { currentWeather ->
+                SetWeatherCard(
+                    currentWeather.toString(),
+                    appColors, appLanguage, cardStyle
+                )
+                Spacer(Modifier.height(20.dp))
+
+                Log.e("API", "Weather card formed")
+
+                SetAddCard(
+                    isDarkMode, appColors, appLanguage, cardStyle,
+                    title, description, imageUri, currentWeather,
+                    { titleError = appLanguage.error_mandatory_field },
+                    { imageUriError = appLanguage.error_mandatory_field },
+                    { title = ""; description = ""; imageUri = null },
+                    (titleError != null || imageUri != null),
+                    databaseViewModel
+                )
+
+                Log.e("API", "Add card formed")
+            }
         }
     }
 }
@@ -148,7 +168,7 @@ fun getCorrectCardStyle(cardStyle: AppCardStyle, isError: Boolean) : AppCardStyl
 
 
 @Composable
-fun DisplayErrorMessage(appColors: AppColors, error: String) {
+fun DisplayErrorMessage(error: String) {
     Spacer(Modifier.height(20.dp))
     Text(
         text = error,
@@ -294,7 +314,7 @@ fun SetImageGetter(
 
         // Error message
         if (imageUriError != null) {
-            DisplayErrorMessage(appColors, imageUriError)
+            DisplayErrorMessage(imageUriError)
         }
     }
 }
@@ -365,26 +385,22 @@ fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
 // -----------
 
 
-fun getWeatherFromAPI(isEnglish: Boolean) : Weather {
-
-}
-
-
 @Composable
 fun SetWeatherCard(
-    weather: Weather,
+    weatherStr: String,
     appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle
 ) {
+
+    Log.e("API", "Weather card started")
+
     SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_weather,
         cardStyle = cardStyle
     ){
         Text(
-            text =
-                if (weather.isEmpty()) appLanguage.error_not_available
-                else weather.toString(),
+            text = weatherStr.ifEmpty { appLanguage.error_not_available },
             fontSize = 18.sp,
             color = appColors.secondary3
         )
@@ -403,10 +419,10 @@ fun SetWeatherCard(
 fun SetAddCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
-    title: String, description: String, imageUri: Uri?, weather: String?,
+    title: String, description: String, imageUri: Uri?, weather: Weather,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, isError: Boolean,
-    viewModel: DatabaseMethods
+    viewModel: DatabaseViewModel
 ) {
     SetCardLayout(
         appColors = appColors,
@@ -428,10 +444,10 @@ fun SetAddCard(
 fun SetAddButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    title: String, description: String, imageUri: Uri?, weather: String?,
+    title: String, description: String, imageUri: Uri?, weather: Weather,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, isError: Boolean,
-    viewModel: DatabaseMethods
+    viewModel: DatabaseViewModel
 ) {
     // Context
     val context = LocalContext.current
@@ -457,7 +473,7 @@ fun SetAddButton(
 
     // Display error message
     if (isError) {
-        DisplayErrorMessage(appColors, appLanguage.error_check)
+        DisplayErrorMessage(appLanguage.error_check)
     }
 }
 
@@ -467,7 +483,7 @@ fun getAddOnClickEvent(
     context: Context, appLanguage: TextBlocks,
     title: String, description: String, imageUri: Uri?, weather: Weather,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
-    zeroInfoFields: () -> Unit, viewModel: DatabaseMethods
+    zeroInfoFields: () -> Unit, viewModel: DatabaseViewModel
 ): () -> Unit {
     return {
         var hasError = false
@@ -492,8 +508,9 @@ fun getAddOnClickEvent(
                     title = title,
                     description = description,
                     imageName = savedImageName,
-                    temperature = weather.temperature,
-                    weather = weather.weather
+                    temperature = weather.getTemperature(),
+                    weather = weather.getWeather(),
+                    locationName = weather.name
                 )
                 viewModel.addDiaryItem(diaryItem)
             }

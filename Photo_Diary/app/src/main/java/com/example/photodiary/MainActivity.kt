@@ -1,13 +1,12 @@
 package com.example.photodiary
 
-import android.content.Context
-import android.hardware.Sensor
-import android.hardware.Sensor.TYPE_AMBIENT_TEMPERATURE
-import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -56,7 +55,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -65,11 +63,37 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.photodiary.ui.theme.PhotoDiaryTheme
+import android.Manifest
+import android.content.Context
+import android.icu.util.Calendar
+import android.icu.util.MeasureUnit
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.navDeepLink
+import java.util.concurrent.TimeUnit
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+
 
 
 class MainActivity : ComponentActivity() {
+
+    // Request permissions
+    val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ){ }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Get permissions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        // Set notification requester
+        scheduleDailyNotifications(this, 23, 18) // 22.00
 
         // Database
         val app = application as PhotoDiaryApplication
@@ -90,6 +114,41 @@ class MainActivity : ComponentActivity() {
 
 
 
+// -----------------------
+// - Daily notifications -
+// -----------------------
+
+
+fun scheduleDailyNotifications(context: Context, hour: Int, minutes: Int) {
+    val currentTime = Calendar.getInstance()
+    val scheduleTime = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minutes)
+        set(Calendar.SECOND, 0)
+    }
+
+    // Schedule the tomorrow when the today's time is passed
+    if (scheduleTime.before(currentTime)) {
+        scheduleTime.add(Calendar.DAY_OF_MONTH, 1)
+    }
+
+    // Build the notification requester
+    val delay = scheduleTime.timeInMillis - currentTime.timeInMillis
+    val dailyWorkRequest = OneTimeWorkRequestBuilder<DailyNotificationWorker>()
+        .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+        .addTag("daily_notification")
+        .build()
+
+    WorkManager.getInstance(context).enqueueUniqueWork(
+        "daily_notification_work",
+        ExistingWorkPolicy.REPLACE,
+        dailyWorkRequest
+    )
+}
+
+
+
+
 // ----------------
 // - Destinations -
 // ----------------
@@ -103,6 +162,7 @@ enum class AppDestinations(
     HOME("Home","home", R.drawable.icon_home_light),
     ADD("Add","add", R.drawable.icon_take_photo_light),
 }
+
 
 
 
@@ -132,8 +192,13 @@ fun PhotoDiaryApp(db: AppDatabase) {
 
     // Diary DAO setup
     val diaryItemDAO = db.diaryItemDao()
-    val viewModel: DatabaseMethods = viewModel(
-        factory = DatabaseMethodsFactory(diaryItemDAO)
+    val databaseViewModel: DatabaseViewModel = viewModel(
+        factory = DatabaseViewModelFactory(diaryItemDAO)
+    )
+
+    // Weather API view model
+    val weatherViewModel: WeatherViewModel = viewModel(
+        factory = WeatherViewModelFactory()
     )
 
     /*
@@ -178,7 +243,7 @@ fun PhotoDiaryApp(db: AppDatabase) {
             { isDarkMode = !isDarkMode },
             { isEnglish = !isEnglish },
             appColors, appLanguage,
-            viewModel, innerPadding
+            weatherViewModel, databaseViewModel, innerPadding
         )
     }
 }
@@ -285,7 +350,7 @@ fun SetBodyCard(
     isDarkMode: Boolean, isEnglish: Boolean,
     onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
     appColors: AppColors, appLanguage: TextBlocks,
-    viewModel: DatabaseMethods, innerPadding: PaddingValues
+    weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel, innerPadding: PaddingValues
 ) {
     NavHost(
         navController,
@@ -300,24 +365,27 @@ fun SetBodyCard(
 
         // Home
         composable(AppDestinations.HOME.route) {
-            HomeCard(appColors, appLanguage, viewModel, navController)
+            HomeCard(appColors, appLanguage, databaseViewModel, navController)
         }
 
         // Add
-        composable(AppDestinations.ADD.route) {
-            AddNewCard(isDarkMode, appColors, appLanguage, viewModel)
+        composable(
+            AppDestinations.ADD.route,
+            deepLinks = listOf(navDeepLink { uriPattern = "photodiary://add" }) // Uri link for notifications
+        ) {
+            AddNewCard(isDarkMode, appColors, appLanguage, weatherViewModel, databaseViewModel)
         }
 
         // Detailed image
         composable("imageDetail/{id}") { entry ->
             val item = entry.arguments?.getString("id")!!.toInt()
-            ImageDetailCard(appColors, appLanguage, item, viewModel)
+            ImageDetailCard(appColors, appLanguage, item, databaseViewModel)
         }
 
         // Edit image
         composable("imageEditDetail/{id}") { entry ->
             val item = entry.arguments?.getString("id")!!.toInt()
-            ImageEditDetailCard(isDarkMode, appColors, appLanguage, item, viewModel)
+            ImageEditDetailCard(isDarkMode, appColors, appLanguage, item, databaseViewModel)
         }
     }
 }

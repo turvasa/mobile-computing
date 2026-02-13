@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -28,7 +29,7 @@ import java.io.File
 @Composable
 fun HomeCard(
     appColors: AppColors, appLanguage: TextBlocks,
-    viewModel: DatabaseMethods, navController: NavHostController
+    viewModel: DatabaseViewModel, navController: NavHostController
 ) {
     SetTabLayout(appColors) {
             SetBody(appColors, appLanguage, viewModel, navController)
@@ -39,7 +40,7 @@ fun HomeCard(
 @Composable
 fun SetBody(
     appColors: AppColors, appLanguage: TextBlocks,
-    viewModel: DatabaseMethods, navController: NavHostController
+    viewModel: DatabaseViewModel, navController: NavHostController
 ) {
     Box {
         TitleCard(appColors, appLanguage.title_home, 3.dp, 0.dp, true)
@@ -49,13 +50,15 @@ fun SetBody(
 
 
 @Composable
-fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseMethods, navController: NavHostController) {
+fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseViewModel, navController: NavHostController) {
     val diaryItems = getImages(viewModel)
     val context = LocalContext.current
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 2000.dp),
         contentPadding = PaddingValues(top = 40.dp, bottom = 40.dp, start = 10.dp, end = 10.dp)
     ) {
         items(diaryItems) {
@@ -97,7 +100,7 @@ fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseMethods, navControlle
 
 
 @Composable
-fun getImages(viewModel: DatabaseMethods) : List<DiaryItem> {
+fun getImages(viewModel: DatabaseViewModel) : List<DiaryItem> {
     val diaryItems = viewModel.diaryItems.collectAsState()
     return diaryItems.value
 }

@@ -1,3 +1,5 @@
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -10,6 +12,13 @@ android {
     namespace = "com.example.photodiary"
     compileSdk = 36
 
+    // Load properties from config file
+    val properties = Properties().apply {
+        load(FileInputStream(rootProject.file("local.properties")))
+    }
+    val weatherApiKey = properties.getProperty("weather.api.key")
+        ?: throw GradleException("WEATHER_API_KEY is missing in local.properties")
+
     defaultConfig {
         applicationId = "com.example.photodiary"
         minSdk = 34
@@ -18,6 +27,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Inject properties
+        buildConfigField("String", "WEATHER_API_KEY", "\"$weatherApiKey\"")
     }
 
     buildTypes {
@@ -35,6 +47,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     kotlin {
         compilerOptions {
@@ -93,7 +106,11 @@ dependencies {
 
     // API
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.5.0")
     implementation("com.squareup.retrofit2:converter-moshi:3.0.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
+
+    // Notifications
+    implementation("androidx.work:work-runtime-ktx:2.11.1")
 
 }

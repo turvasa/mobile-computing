@@ -1,6 +1,5 @@
 package com.example.photodiary
 
-import android.health.connect.datatypes.units.Temperature
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,7 @@ import coil3.compose.AsyncImage
 import java.io.File
 
 @Composable
-fun ImageDetailCard(appColors: AppColors, appLanguage: TextBlocks, itemID: Int, viewModel: DatabaseMethods) {
+fun ImageDetailCard(appColors: AppColors, appLanguage: TextBlocks, itemID: Int, viewModel: DatabaseViewModel) {
 
     val diaryItemFlow = remember(itemID) {
         viewModel.getDiaryItemByID(itemID)
@@ -99,8 +98,8 @@ fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem)
 
             // Weather
             Spacer(Modifier.height(20.dp))
-            val weather = Weather(diaryItem.temperature, diaryItem.weather)
-            SetWeatherCard(weather, appColors, appLanguage, cardStyle)
+            val weatherStr = Weather.formatWeather(diaryItem.temperature, diaryItem.weather, diaryItem.locationName)
+            SetWeatherCard(weatherStr, appColors, appLanguage, cardStyle)
         }
     }
 }

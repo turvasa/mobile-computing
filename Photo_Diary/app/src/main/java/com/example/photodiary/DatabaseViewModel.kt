@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class DatabaseMethods(private val diaryItemDAO: DiaryItemDAO) : ViewModel() {
+class DatabaseViewModel(private val diaryItemDAO: DiaryItemDAO) : ViewModel() {
 
 
     // Automatically load all entries to memory

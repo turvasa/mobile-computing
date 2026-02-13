@@ -1,0 +1,43 @@
+{
+    "coord":{
+        "lon":27.8322,"lat":65.0138
+    },
+    "weather":[
+        {
+            "id":803,
+            "main":"Clouds",
+            "description":"broken clouds",
+            "icon":"04n"
+        }
+    ],
+    "base":"stations",
+    "main":{
+        "temp":-24.26,
+        "feels_like":-30.55,
+        "temp_min":-24.26,
+        "temp_max":-24.26,
+        "pressure":1008,
+        "humidity":100,
+        "sea_level":1008,
+        "grnd_level":981
+    },
+    "visibility":6588,
+    "wind":{
+        "speed":1.93,
+        "deg":183,
+        "gust":1.72
+    },
+    "clouds":{
+        "all":55
+    },
+    "dt":1771006348,
+    "sys":{
+        "country":"FI",
+        "sunrise":1770963405,
+        "sunset":1770992954
+    },
+    "timezone":7200,
+    "id":640658,
+    "name":"Puolanka",
+    "cod":200
+}

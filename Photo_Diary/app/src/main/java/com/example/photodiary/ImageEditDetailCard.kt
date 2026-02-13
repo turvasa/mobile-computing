@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun ImageEditDetailCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, itemID: Int, viewModel: DatabaseMethods) {
+fun ImageEditDetailCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, itemID: Int, viewModel: DatabaseViewModel) {
 
     val diaryItemFlow = remember(itemID) {
         viewModel.getDiaryItemByID(itemID)
@@ -52,7 +52,7 @@ fun ImageEditDetailCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: 
 
 
 @Composable
-fun SetEditBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem, viewModel: DatabaseMethods) {
+fun SetEditBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem, viewModel: DatabaseViewModel) {
 
     // Formatting for setting cards
     val cardStyle = AppCardStyle(
@@ -148,7 +148,7 @@ fun SetEditInfoCard(
         )
 
         if (error != null) {
-            DisplayErrorMessage(appColors, error)
+            DisplayErrorMessage(error)
         }
     }
 }
@@ -166,7 +166,7 @@ fun SetUpdateCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
     diaryItem: DiaryItem, title: String, description: String,
-    titleError: (String) -> Unit, viewModel: DatabaseMethods
+    titleError: (String) -> Unit, viewModel: DatabaseViewModel
 ) {
     SetCardLayout(
         appColors = appColors,
@@ -188,7 +188,7 @@ fun SetUpdateButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     diaryItem: DiaryItem, title: String, description: String,
-    titleError: (String) -> Unit, viewModel: DatabaseMethods
+    titleError: (String) -> Unit, viewModel: DatabaseViewModel
 ) {
 
     // Button text
@@ -215,7 +215,7 @@ fun getUpdateOnClickEvent(
     appLanguage: TextBlocks,
     diaryItem: DiaryItem, title: String, description: String,
     titleError: (String) -> Unit,
-    viewModel: DatabaseMethods
+    viewModel: DatabaseViewModel
 ): () -> Unit {
     return {
         var hasError = false
@@ -234,7 +234,8 @@ fun getUpdateOnClickEvent(
                 description = description,
                 imageName = diaryItem.imageName,
                 temperature = diaryItem.temperature,
-                weather = diaryItem.weather
+                weather = diaryItem.weather,
+                locationName = diaryItem.locationName
             )
             viewModel.updateDiaryItem(updatedDiaryItem)
         }
