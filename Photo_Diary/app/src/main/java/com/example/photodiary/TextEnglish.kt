@@ -18,6 +18,10 @@ class TextEnglish : TextBlocks {
     override val settings_button_theme_light = "Light Mode"
     override val settings_title_language = "Language"
     override val settings_button_language = "Suomi"
+    override val settings_button_time_confirm = "Confirm"
+    override val settings_button_time_dismiss = "Dismiss"
+    override val settings_time_title = "Notifications"
+    override val settings_time_change = "Timing"
 
     // Home tab
     override val home_description = "Description"

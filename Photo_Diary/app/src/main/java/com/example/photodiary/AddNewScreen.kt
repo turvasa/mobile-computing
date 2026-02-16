@@ -3,12 +3,21 @@ package com.example.photodiary
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,13 +47,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil3.compose.AsyncImage
 import java.io.File
-
+import androidx.camera.core.Preview
+import androidx.core.content.FileProvider
+import kotlin.contracts.contract
 
 
 @Composable
 fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
+
+    clearCache(LocalContext.current)
+
     SetTabLayout(appColors) {
         SetBody(isDarkMode, appColors, appLanguage, weatherViewModel, databaseViewModel)
     }
@@ -112,29 +129,23 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
             )
             Spacer(Modifier.height(20.dp))
 
-            Log.e("API", "Other cards formed")
-
             weather?.let { currentWeather ->
                 SetWeatherCard(
                     currentWeather.toString(),
                     appColors, appLanguage, cardStyle
                 )
                 Spacer(Modifier.height(20.dp))
-
-                Log.e("API", "Weather card formed")
-
-                SetAddCard(
-                    isDarkMode, appColors, appLanguage, cardStyle,
-                    title, description, imageUri, currentWeather,
-                    { titleError = appLanguage.error_mandatory_field },
-                    { imageUriError = appLanguage.error_mandatory_field },
-                    { title = ""; description = ""; imageUri = null },
-                    (titleError != null || imageUri != null),
-                    databaseViewModel
-                )
-
-                Log.e("API", "Add card formed")
             }
+
+            SetAddCard(
+                isDarkMode, appColors, appLanguage, cardStyle,
+                title, description, imageUri, weather,
+                { titleError = appLanguage.error_mandatory_field },
+                { imageUriError = appLanguage.error_mandatory_field },
+                { title = ""; description = ""; imageUri = null },
+                (titleError != null || imageUri != null),
+                databaseViewModel
+            )
         }
     }
 }
@@ -175,6 +186,13 @@ fun DisplayErrorMessage(error: String) {
         color = Color.Red,
         fontSize = 13.sp
     )
+}
+
+
+fun clearCache(context: Context) {
+    context.cacheDir.listFiles()?.forEach { file ->
+        if (file.name.startsWith("temp")) file.delete()
+    }
 }
 
 
@@ -305,7 +323,13 @@ fun SetImageGetter(
         title = appLanguage.add_file,
         cardStyle = getCorrectCardStyle(cardStyle, (imageUriError != null))
     ) {
-        SetAddFileButton(isDarkMode, appColors, appLanguage, toggleImageUri)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            SetAddFileButton(isDarkMode, appColors, appLanguage, toggleImageUri)
+            SetTakeImageButton(isDarkMode, appColors, appLanguage, toggleImageUri)
+        }
 
         // Given Image
         if (imageUri != null) {
@@ -349,6 +373,60 @@ fun SetAddFileButton(
     )
 
     SetButton(isDarkMode, appColors, text, onClickEvent, icon)
+}
+
+
+@Composable
+fun SetTakeImageButton(
+    isDarkMode: Boolean,
+    appColors: AppColors, appLanguage: TextBlocks,
+    toggleImageUri: (Uri?) -> Unit
+) {
+    var tempUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+
+    // Setup camera launcher (phone's camera app)
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { accepted ->
+
+        // Save the uri, if image was accepted
+        if (accepted) {
+            toggleImageUri(tempUri)
+        }
+    }
+
+    // Button text
+    val text = appLanguage.add_file_take_photo
+
+    // On Click event
+    val onClickEvent = { getTakeImageEvent(context, cameraLauncher) { tempUri = it } }
+
+    // Button icon
+    val icon = painterResource(
+        if (isDarkMode) R.drawable.icon_take_photo_light
+        else R.drawable.icon_take_photo_dark
+    )
+
+    SetButton(isDarkMode, appColors, text, onClickEvent, icon)
+}
+
+
+fun getTakeImageEvent(context: Context, cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>, toggleTempImageUri: (Uri?) -> Unit) {
+
+    // Create a temporary file in the cache
+    val tempFile = File(
+        context.cacheDir,
+        "temp_${System.currentTimeMillis()}.jpg"
+    )
+
+    val tempUri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.provider",
+        tempFile
+    )
+    toggleTempImageUri(tempUri)
+    cameraLauncher.launch(tempUri)
 }
 
 
@@ -419,7 +497,7 @@ fun SetWeatherCard(
 fun SetAddCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
-    title: String, description: String, imageUri: Uri?, weather: Weather,
+    title: String, description: String, imageUri: Uri?, weather: Weather?,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, isError: Boolean,
     viewModel: DatabaseViewModel
@@ -444,7 +522,7 @@ fun SetAddCard(
 fun SetAddButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    title: String, description: String, imageUri: Uri?, weather: Weather,
+    title: String, description: String, imageUri: Uri?, weather: Weather?,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, isError: Boolean,
     viewModel: DatabaseViewModel
@@ -481,7 +559,7 @@ fun SetAddButton(
 
 fun getAddOnClickEvent(
     context: Context, appLanguage: TextBlocks,
-    title: String, description: String, imageUri: Uri?, weather: Weather,
+    title: String, description: String, imageUri: Uri?, weather: Weather?,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, viewModel: DatabaseViewModel
 ): () -> Unit {
@@ -508,9 +586,9 @@ fun getAddOnClickEvent(
                     title = title,
                     description = description,
                     imageName = savedImageName,
-                    temperature = weather.getTemperature(),
-                    weather = weather.getWeather(),
-                    locationName = weather.name
+                    temperature = weather?.getTemperature(),
+                    weather = weather?.getWeather(),
+                    locationName = weather?.name
                 )
                 viewModel.addDiaryItem(diaryItem)
             }
@@ -524,7 +602,6 @@ fun getAddOnClickEvent(
 
 fun saveTheImage(context: Context, imageUri: Uri) : String {
     val inputStream = context.contentResolver.openInputStream(imageUri)
-
     val imageName = "img_${System.currentTimeMillis()}.jpg"
     val outputFile = File(context.filesDir, imageName)
 
@@ -533,6 +610,7 @@ fun saveTheImage(context: Context, imageUri: Uri) : String {
         inputStream?.copyTo(output)
     }
 
+    clearCache(context)
     inputStream?.close()
     return imageName
 }

@@ -93,13 +93,17 @@ fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem)
             SetInfoDisplayCard(appColors, appLanguage.add_info_title, diaryItem.title, cardStyle)
 
             // Description
-            Spacer(Modifier.height(20.dp))
-            SetInfoDisplayCard(appColors,appLanguage.add_info_description, diaryItem.description!!, cardStyle)
+            if (diaryItem.description != null) {
+                Spacer(Modifier.height(20.dp))
+                SetInfoDisplayCard(appColors,appLanguage.add_info_description, diaryItem.description, cardStyle)
+            }
 
             // Weather
-            Spacer(Modifier.height(20.dp))
-            val weatherStr = Weather.formatWeather(diaryItem.temperature, diaryItem.weather, diaryItem.locationName)
-            SetWeatherCard(weatherStr, appColors, appLanguage, cardStyle)
+            if (diaryItem.weather != null) {
+                Spacer(Modifier.height(20.dp))
+                val weatherStr = Weather.formatWeather(diaryItem.temperature, diaryItem.weather, diaryItem.locationName)
+                SetWeatherCard(weatherStr, appColors, appLanguage, cardStyle)
+            }
         }
     }
 }

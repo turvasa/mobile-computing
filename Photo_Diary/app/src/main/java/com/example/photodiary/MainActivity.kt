@@ -2,7 +2,6 @@ package com.example.photodiary
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -66,12 +65,9 @@ import com.example.photodiary.ui.theme.PhotoDiaryTheme
 import android.Manifest
 import android.content.Context
 import android.icu.util.Calendar
-import android.icu.util.MeasureUnit
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.navDeepLink
 import java.util.concurrent.TimeUnit
 import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 
@@ -93,7 +89,10 @@ class MainActivity : ComponentActivity() {
         }
 
         // Set notification requester
-        scheduleDailyNotifications(this, 16, 21)
+        val preferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val hour = preferences.getInt("notification_hour", 20)
+        val minutes = preferences.getInt("notification_minutes", 0)
+        scheduleDailyNotifications(this, hour, minutes)
 
         // Database
         val app = application as PhotoDiaryApplication
@@ -108,9 +107,6 @@ class MainActivity : ComponentActivity() {
     }
 
 }
-
-
-//private lateinit var sensorManager: SensorManager
 
 
 
@@ -201,18 +197,6 @@ fun PhotoDiaryApp(db: AppDatabase) {
     val weatherViewModel: WeatherViewModel = viewModel(
         factory = WeatherViewModelFactory()
     )
-
-    /*
-    // Sensor manager
-    sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    val temperatureSensor: Sensor? = (
-        if (sensorManager.getSensorList(TYPE_AMBIENT_TEMPERATURE) != null) {
-            sensorManager.getDefaultSensor(TYPE_AMBIENT_TEMPERATURE)
-        }
-        else null
-    )
-     */
-
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -512,11 +496,14 @@ fun SetButton(
             containerColor = appColors.secondaryText
         ),
         contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp, start = 12.dp, end = 12.dp),
-        modifier = Modifier.border(
-            2.dp,
-            appColors.border.copy(alpha = 0.8f),
-            RoundedCornerShape(25.dp)
-        )
+        shape = RoundedCornerShape(25.dp),
+        modifier = Modifier
+            .wrapContentHeight()
+            .border(
+                2.dp,
+                appColors.border.copy(alpha = 0.8f),
+                RoundedCornerShape(25.dp)
+            )
     ) {
 
         Text(

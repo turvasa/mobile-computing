@@ -18,6 +18,10 @@ interface TextBlocks {
     val settings_button_theme_light: String
     val settings_title_language: String
     val settings_button_language: String
+    val settings_button_time_confirm: String
+    val settings_button_time_dismiss: String
+    val settings_time_title: String
+    val settings_time_change: String
 
     // Home tab
     val home_description: String

@@ -17,6 +17,10 @@ class TextFinnish : TextBlocks {
     override val settings_button_theme_light = "Vaalea"
     override val settings_title_language = "Kieli"
     override val settings_button_language = "English"
+    override val settings_button_time_confirm = "Vahvista"
+    override val settings_button_time_dismiss = "Hylkää"
+    override val settings_time_title = "Ilmoitukset"
+    override val settings_time_change = "Ajoitus"
 
     // Home tab
     override val home_description = "Kuvaus"

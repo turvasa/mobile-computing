@@ -122,6 +122,13 @@ fun SetEditBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBloc
                 {titleError = appLanguage.error_mandatory_field},
                 viewModel
             )
+
+            // Delete button
+            Spacer(Modifier.height(20.dp))
+            SetDeleteCard(
+                isDarkMode, appColors, appLanguage,
+                cardStyle, diaryItem, viewModel
+            )
         }
     }
 }
@@ -156,9 +163,9 @@ fun SetEditInfoCard(
 
 
 
-// -----------------------
-// - Publish the changes -
-// -----------------------
+// ----------
+// - Update -
+// ----------
 
 
 @Composable
@@ -240,4 +247,50 @@ fun getUpdateOnClickEvent(
             viewModel.updateDiaryItem(updatedDiaryItem)
         }
     }
+}
+
+
+
+
+// ----------
+// - Delete -
+// ----------
+
+
+@Composable
+fun SetDeleteCard(
+    isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
+    cardStyle: AppCardStyle, diaryItem: DiaryItem, viewModel: DatabaseViewModel
+) {
+    SetCardLayout(
+        appColors = appColors,
+        title = appLanguage.delete,
+        cardStyle = cardStyle
+    ) {
+        SetDeleteButton(
+            isDarkMode, appColors, appLanguage,
+            diaryItem, viewModel
+        )
+    }
+}
+
+@Composable
+fun SetDeleteButton(
+    isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
+    diaryItem: DiaryItem, viewModel: DatabaseViewModel
+) {
+
+    // Button text
+    val text = appLanguage.delete
+
+    // Button click event
+    val onClickEvent = { viewModel.deleteDiaryItem(diaryItem) }
+
+    // Button icon
+    val icon = painterResource(
+        if (isDarkMode) R.drawable.icon_add_dark
+        else R.drawable.icon_delete_light
+    )
+
+    SetButton(isDarkMode, appColors, text, onClickEvent, icon)
 }
