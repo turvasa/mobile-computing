@@ -1,5 +1,5 @@
 package com.example.photodiary
-import com.squareup.moshi.Json
+
 import retrofit2.http.Query
 import retrofit2.http.GET
 

@@ -24,7 +24,6 @@ class WeatherViewModel : ViewModel() {
 
     // Retrofit and API defining
     private val weatherApiUrl = "https://api.openweathermap.org/"
-
     private val retrofit = Retrofit.Builder()
         .baseUrl(weatherApiUrl)
         .addConverterFactory(GsonConverterFactory.create())

@@ -93,7 +93,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // Set notification requester
-        scheduleDailyNotifications(this, 23, 18) // 22.00
+        scheduleDailyNotifications(this, 16, 21)
 
         // Database
         val app = application as PhotoDiaryApplication
@@ -106,6 +106,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
 
 
@@ -127,7 +128,7 @@ fun scheduleDailyNotifications(context: Context, hour: Int, minutes: Int) {
         set(Calendar.SECOND, 0)
     }
 
-    // Schedule the tomorrow when the today's time is passed
+    // Schedule tomorrow when the today's time is passed
     if (scheduleTime.before(currentTime)) {
         scheduleTime.add(Calendar.DAY_OF_MONTH, 1)
     }

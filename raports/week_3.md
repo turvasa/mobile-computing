@@ -1,4 +1,4 @@
-# HW2 - Tatu Tallavaara, 2208317
+# HW3 - Tatu Tallavaara, 2208317
 
 
 ## How did you implement picking an image?
