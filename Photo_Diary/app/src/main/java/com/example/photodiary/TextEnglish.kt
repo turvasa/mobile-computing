@@ -1,18 +1,34 @@
 package com.example.photodiary
 
+/**
+ * English implementation of [TextBlocks], providing all textual content
+ * for the Photo Diary app in English.
+ */
 class TextEnglish : TextBlocks {
 
-    // Navigation
+
+
+    // --------------
+    // - Navigation -
+    // --------------
     override val nav_home = "Home"
     override val nav_settings = "Settings"
     override val nav_add = "Add"
 
-    // Titles
+
+
+    // ----------
+    // - Titles -
+    // ----------
     override val title_home = "Home"
     override val title_settings = "Settings"
     override val title_add = "Add"
 
-    // Settings tab
+
+
+    // ----------------
+    // - Settings tab -
+    // ----------------
     override val settings_title_theme = "Theme"
     override val settings_button_theme_dark = "Dark Mode"
     override val settings_button_theme_light = "Light Mode"
@@ -23,12 +39,20 @@ class TextEnglish : TextBlocks {
     override val settings_time_title = "Notifications"
     override val settings_time_change = "Timing"
 
-    // Home tab
+
+
+    // ------------
+    // - Home tab -
+    // ------------
     override val home_description = "Description"
     override val home_temperature = "Temperature"
     override val home_location = "Location"
 
-    // Add tab
+
+
+    // -----------
+    // - Add tab -
+    // -----------
     override val add_create = "Create"
     override val add_create_new = "Create new Entry"
     override val add_info = "Information"
@@ -39,14 +63,22 @@ class TextEnglish : TextBlocks {
     override val add_file_take_photo = "Take photo"
     override val add_weather = "Weather"
 
-    // Errors
+
+
+    // ----------
+    // - Errors -
+    // ----------
     override val error_mandatory_field = "Mandatory field!"
     override val error_exceeds_maximum_limit = "Exceeds the maximum char limit: "
     override val error_must_be_integer = "Value must be integer!"
     override val error_check = "Invalid values given! Check all fields."
     override val error_not_available = "Not available."
 
-    // Others
+
+
+    // -----------------
+    // - Miscellaneous -
+    // -----------------
     override val loading = "Loading..."
     override val edit = "Edit"
     override val details = "Details"

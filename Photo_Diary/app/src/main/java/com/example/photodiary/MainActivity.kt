@@ -65,6 +65,8 @@ import com.example.photodiary.ui.theme.PhotoDiaryTheme
 import android.Manifest
 import android.content.Context
 import android.icu.util.Calendar
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.navDeepLink
 import java.util.concurrent.TimeUnit
 import androidx.work.ExistingWorkPolicy
@@ -80,12 +82,21 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ){ }
 
+    /**
+     * Main entry activity of the application.
+     * Initializes permissions, notification scheduling,
+     * sets up the database instance and launches the Compose UI.
+     *
+     * @param savedInstanceState Previously saved activity state (if available).
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Get permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
         // Set notification requester
@@ -116,7 +127,16 @@ class MainActivity : ComponentActivity() {
 // -----------------------
 
 
-fun scheduleDailyNotifications(context: Context, hour: Int, minutes: Int) {
+/**
+ * Schedules a daily notification using WorkManager.
+ * Calculates the next alarm time and enqueues a one-time work request
+ * that is rescheduled every day after previous event.
+ *
+ * @param context Application context used to access WorkManager.
+ * @param hour Target hour for the notification (24h format).
+ * @param minutes Target minute for the notification.
+ */
+private fun scheduleDailyNotifications(context: Context, hour: Int, minutes: Int) {
     val currentTime = Calendar.getInstance()
     val scheduleTime = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, hour)
@@ -146,10 +166,71 @@ fun scheduleDailyNotifications(context: Context, hour: Int, minutes: Int) {
 
 
 
+// -----------------------
+// - Location Permission -
+// -----------------------
+
+
+/**
+ * Requests location permissions in a composable context.
+ * Launches permission requests and triggers callbacks depending
+ * on whether all required permissions are granted or not.
+ *
+ * Source: https://medium.com/@munbonecci/how-to-get-your-location-in-jetpack-compose-f085031df4c1
+ *
+ * @param onPermissionGranted Callback invoked when permissions are granted.
+ * @param onPermissionDenied Callback invoked when permissions are denied.
+ */
+@Composable
+fun RequestLocationPermission(
+    onPermissionGranted: () -> Unit,
+    onPermissionDenied: () -> Unit
+) {
+    // 1. Create a stateful launcher using rememberLauncherForActivityResult
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissionsMap ->
+        // 2. Check if all requested permissions are granted
+        val arePermissionsGranted = permissionsMap.values.reduce { acc, next ->
+            acc && next
+        }
+
+        // 3. Invoke the appropriate callback based on the permission result
+        if (arePermissionsGranted) {
+            onPermissionGranted.invoke()
+        } else {
+            onPermissionDenied.invoke()
+        }
+    }
+
+    // 4. Launch the permission request on composition
+    LaunchedEffect(Unit) {
+        locationPermissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
+}
+
+
+
+
 // ----------------
 // - Destinations -
 // ----------------
 
+
+/**
+ * Navigation destinations used the Navigation Bar.
+ * Holds destination label, route and icon resource references.
+ *
+ * @param label Display label of the destination.
+ * @param route Navigation route string.
+ * @param icon Drawable resource id used as destination icon.
+ * @return [Enum] entry representing a navigation destination.
+ */
 enum class AppDestinations(
     var label: String,
     val route: String,
@@ -168,9 +249,16 @@ enum class AppDestinations(
 // ---------
 
 
-
+/**
+ * Root composable of the application.
+ * Sets up navigation, theme and language state, view models,
+ * and overall layout.
+ *
+ * @param db Application database instance used to create the
+ * corresponding view model
+ */
 @Composable
-fun PhotoDiaryApp(db: AppDatabase) {
+private fun PhotoDiaryApp(db: AppDatabase) {
 
     // Navigation control
     val navController = rememberNavController()
@@ -234,9 +322,14 @@ fun PhotoDiaryApp(db: AppDatabase) {
 }
 
 
-
+/**
+ * Updates the navigation icons according to the current theme.
+ * Switches drawable recourses between dark and ligh mode.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ */
 @Composable
-fun SetNavIcons(isDarkMode: Boolean) {
+private fun SetNavIcons(isDarkMode: Boolean) {
 
     // Settings
     AppDestinations.SETTINGS.icon = (
@@ -258,18 +351,29 @@ fun SetNavIcons(isDarkMode: Boolean) {
 }
 
 
-
+/**
+ * Updates the destination labels based on the selected language.
+ *
+ * @param appLanguage Text block provider containing localized strings.
+ */
 @Composable
-fun SetDestinationLabels(appLanguage: TextBlocks) {
+private fun SetDestinationLabels(appLanguage: TextBlocks) {
     AppDestinations.SETTINGS.label = appLanguage.nav_settings
     AppDestinations.HOME.label = appLanguage.nav_home
     AppDestinations.ADD.label = appLanguage.nav_add
 }
 
 
-
+/**
+ * Displays the bottom navigation bar and handles the navigation actions.
+ *
+ * @param navController Navigation controller used for route changes.
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette of the app.
+ * @param currentRoute Currently active navigation route.
+ */
 @Composable
-fun SetNavBar(navController: NavController, isDarkMode: Boolean, appColors: AppColors, currentRoute: String?) {
+private fun SetNavBar(navController: NavController, isDarkMode: Boolean, appColors: AppColors, currentRoute: String?) {
     return NavigationBar(
         containerColor = appColors.secondary,
     ) {
@@ -309,9 +413,13 @@ fun SetNavBar(navController: NavController, isDarkMode: Boolean, appColors: AppC
 }
 
 
-
+/**
+ * Displays the background image depending of the current theme.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ */
 @Composable
-fun SetBackgroundImage(isDarkMode: Boolean) {
+private fun SetBackgroundImage(isDarkMode: Boolean) {
 
     // Set the background
     val background: Int = (
@@ -329,8 +437,23 @@ fun SetBackgroundImage(isDarkMode: Boolean) {
 }
 
 
+/**
+ * Defines navigation routes and loads the corresponding screen composables.
+ * Hosts all application screens inside a NavHost container.
+ *
+ * @param navController Navigation host controller.
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param isEnglish Indicates whether English (or Finnish) language is selected.
+ * @param onToggleDarkMode Callback for toggling dark mode.
+ * @param onToggleLanguage Callback for toggling language.
+ * @param appColors Current color palette.
+ * @param appLanguage Current localized text provider.
+ * @param weatherViewModel ViewModel for weather data.
+ * @param databaseViewModel ViewModel for database operations.
+ * @param innerPadding Scaffold padding values.
+ */
 @Composable
-fun SetBodyCard(
+private fun SetBodyCard(
     navController: NavHostController,
     isDarkMode: Boolean, isEnglish: Boolean,
     onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
@@ -383,12 +506,32 @@ fun SetBodyCard(
 // ------------------
 
 
+/**
+ * Genelar layouts ElevatedCard's reusable styling class.
+ * Can be used to lessen the param count of certain functions.
+ *
+ * @param colors Card color configuration.
+ * @param elevation Card elevation values.
+ * @param modifier Modifier applied to the card.
+ * @return Data object representing card style configuration.
+ */
 data class AppCardStyle(
     val colors: CardColors,
     val elevation: CardElevation,
     val modifier: Modifier
 )
 
+
+/**
+ * Creates a general elevated card layout with title and content slot.
+ * Used for all possible card designs inside the tabs.
+ *
+ * @param appColors Current color palette.
+ * @param title Title shown on the top left corner of the card.
+ * @param cardStyle Styling configuration for the card.
+ * @param contentPadding Padding applied to the content area.
+ * @param content Composable content inside the card.
+ */
 @Composable
 fun SetCardLayout(
     appColors: AppColors,
@@ -419,6 +562,13 @@ fun SetCardLayout(
 }
 
 
+/**
+ * Creates a scrollable tab container with styled card background.
+ * Is used for every tab (app locations)
+ *
+ * @param appColors Current color palette.
+ * @param content Composable content inside the card.
+ */
 @Composable
 fun SetTabLayout(
     appColors: AppColors,
@@ -458,6 +608,16 @@ fun SetTabLayout(
 // - Constant functions -
 // ----------------------
 
+
+/**
+ * Displays a titled corner (top left) label used inside cards.
+ *
+ * @param appColors Current color palette.
+ * @param text Title's text content.
+ * @param rounding Corner plate rounding size. Should be same as the card's rounding size.
+ * @param offset Offset from the top-left corner.
+ * @param isLargeTitle Determines title font size and weight. Tab cards should use True, but otherwise False
+ */
 @Composable
 fun BoxScope.TitleCard(appColors: AppColors, text: String, rounding: Dp, offset: Dp, isLargeTitle: Boolean) {
     Card(
@@ -484,6 +644,15 @@ fun BoxScope.TitleCard(appColors: AppColors, text: String, rounding: Dp, offset:
 }
 
 
+/**
+ * Creates a styled button with given text and icon.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param text Button label text.
+ * @param onClickEvent Callback executed when button is pressed.
+ * @param icon Painter used as the button icon.
+ */
 @Composable
 fun SetButton(
     isDarkMode: Boolean,

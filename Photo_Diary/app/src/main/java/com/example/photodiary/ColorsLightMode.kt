@@ -2,6 +2,10 @@ package com.example.photodiary
 
 import androidx.compose.ui.graphics.Color
 
+
+/**
+ * Implementation of [AppColors] for light mode theme.
+ */
 class ColorsLightMode : AppColors {
     override val primary = Color(0xFF2C3A59) // Midnight Blue
     override val primary2 = Color(0xFF7477B9) // Purple

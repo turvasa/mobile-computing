@@ -2,6 +2,10 @@ package com.example.photodiary
 
 import androidx.compose.ui.graphics.Color
 
+
+/**
+ * Interface defining the color palette for the application.
+ */
 interface AppColors {
     val primary: Color
     val primary2: Color

@@ -26,6 +26,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
 
+/**
+ * Composable card for ImageEditDetail location screen.
+ * Used for displaying the image with its editable information
+ * of the, which can be updated to the database.
+ * Shows the (cannot be edited), title and description.
+ *
+ * @param isDarkMode Indicates whether dark mode is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param itemID ID of the diary item to edit.
+ * @param viewModel [DatabaseViewModel] providing access to diary entries.
+ */
 @Composable
 fun ImageEditDetailCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, itemID: Int, viewModel: DatabaseViewModel) {
 
@@ -46,13 +58,23 @@ fun ImageEditDetailCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: 
     }
 
     SetTabLayout(appColors) {
-        SetEditBody(isDarkMode, appColors, appLanguage, diaryItem!!, viewModel)
+        SetBody(isDarkMode, appColors, appLanguage, diaryItem!!, viewModel)
     }
 }
 
 
+/**
+ * Sets up the body for the ImageEditDetail destination screen.
+ * Shows the image, title and description.
+ *
+ * @param isDarkMode Indicates whether dark mode is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param diaryItem DiaryItem object containing current details.
+ * @param viewModel [DatabaseViewModel] for updating or deleting the item.
+ */
 @Composable
-fun SetEditBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem, viewModel: DatabaseViewModel) {
+private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem, viewModel: DatabaseViewModel) {
 
     // Formatting for setting cards
     val cardStyle = AppCardStyle(
@@ -95,7 +117,7 @@ fun SetEditBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBloc
 
             // Title
             Spacer(Modifier.height(20.dp))
-            SetEditInfoCard(
+            SetInfoCard(
                 appColors, appLanguage,
                 appLanguage.add_info_title, title,
                 "The Scenery", titleError, appLanguage.add_info_title,
@@ -105,7 +127,7 @@ fun SetEditBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBloc
 
             // Description
             Spacer(Modifier.height(20.dp))
-            SetEditInfoCard(
+            SetInfoCard(
                 appColors, appLanguage,
                 appLanguage.add_info_description, description!!,
                 "Lorem ipsum dolor sit amet...", descriptionError, appLanguage.add_info_description,
@@ -134,8 +156,23 @@ fun SetEditBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBloc
 }
 
 
+/**
+ * Displays a text input card for editing a specific diary entry
+ * field (title or description).
+ *
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param title Title of the card.
+ * @param value Current value of the field.
+ * @param placeholder Placeholder text for the input.
+ * @param error Optional error message for validation.
+ * @param label Label for the text input.
+ * @param maxLines Maximum number of input lines.
+ * @param changeInfo Callback to update the value on change.
+ * @param cardStyle Styling configuration for the card.
+ */
 @Composable
-fun SetEditInfoCard(
+private fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
     title: String, value: String, placeholder: String, error: String?,
     label: String, maxLines: Int, changeInfo: (String) -> Unit,
@@ -168,8 +205,22 @@ fun SetEditInfoCard(
 // ----------
 
 
+/**
+ * Displays a card for the UPDATE button for updating the
+ * given changes to the database.
+ *
+ * @param isDarkMode Indicates whether dark mode is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param cardStyle Styling configuration for the card.
+ * @param diaryItem Current diary item to update.
+ * @param title Updated title value.
+ * @param description Updated description value.
+ * @param titleError Callback to show a title validation error.
+ * @param viewModel [DatabaseViewModel] to perform the update.
+ */
 @Composable
-fun SetUpdateCard(
+private fun SetUpdateCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
     diaryItem: DiaryItem, title: String, description: String,
@@ -190,8 +241,20 @@ fun SetUpdateCard(
 }
 
 
+/**
+ * Sets the update button for the database.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param diaryItem Current diary item to update.
+ * @param title Current title input for the DiaryEntry.
+ * @param description Current description input for the DiaryEntry.
+ * @param titleError Callback for title errors.
+ * @param viewModel [DatabaseViewModel] to perform the update.
+ */
 @Composable
-fun SetUpdateButton(
+private fun SetUpdateButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     diaryItem: DiaryItem, title: String, description: String,
@@ -218,7 +281,19 @@ fun SetUpdateButton(
 }
 
 
-fun getUpdateOnClickEvent(
+/**
+ * Gets the lambda function for updating the given diary item changes to the database.
+ * Performs the item's info validations.
+ *
+ * @param appLanguage Localized text provider.
+ * @param diaryItem Current diary item to update.
+ * @param title Current title input for the DiaryEntry.
+ * @param description Current description input for the DiaryEntry.
+ * @param titleError Callback for title errors.
+ * @param viewModel [DatabaseViewModel] to perform the update.
+ * @return Lambda function to execute on button click.
+ */
+private fun getUpdateOnClickEvent(
     appLanguage: TextBlocks,
     diaryItem: DiaryItem, title: String, description: String,
     titleError: (String) -> Unit,
@@ -257,8 +332,19 @@ fun getUpdateOnClickEvent(
 // ----------
 
 
+/**
+ * Sets a card for the DELETE button fro deleting the given diary
+ * entry from the database.
+ *
+ * @param isDarkMode Indicates whether dark mode is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param cardStyle Styling configuration for the card.
+ * @param diaryItem Diary item to delete.
+ * @param viewModel [DatabaseViewModel] to perform the deletion.
+ */
 @Composable
-fun SetDeleteCard(
+private fun SetDeleteCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle, diaryItem: DiaryItem, viewModel: DatabaseViewModel
 ) {
@@ -274,8 +360,18 @@ fun SetDeleteCard(
     }
 }
 
+
+/**
+ * Sets the delete button for the database.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param diaryItem Current diary item to update.
+ * @param viewModel [DatabaseViewModel] to perform the deletion.
+ */
 @Composable
-fun SetDeleteButton(
+private fun SetDeleteButton(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     diaryItem: DiaryItem, viewModel: DatabaseViewModel
 ) {

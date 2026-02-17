@@ -50,6 +50,17 @@ import androidx.room.util.TableInfo
 import java.util.Calendar
 
 
+/**
+ * Composable card for SETTINGS location screen.
+ * Used for changing theme, language, notification timing and more.
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param isEnglish Current language state (true = English, false = Finnish).
+ * @param onToggleDarkMode Callback to toggle dark mode.
+ * @param onToggleLanguage Callback to toggle language.
+ * @param appColors Color palette to style the UI.
+ * @param appLanguage Text strings for the current language.
+ */
 @Composable
 fun SettingsCard(
     isDarkMode: Boolean,
@@ -70,8 +81,19 @@ fun SettingsCard(
 }
 
 
+/**
+ * Sets up the body for the SETTINGS destination screen.
+ * Displays button oriented setting cards for the settings sections.
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param isEnglish Current language state.
+ * @param onToggleDarkMode Callback to toggle dark mode.
+ * @param onToggleLanguage Callback to toggle language.
+ * @param appColors Color palette for UI elements.
+ * @param appLanguage Text strings for the current language.
+ */
 @Composable
-fun SetBody(
+private fun SetBody(
     isDarkMode: Boolean, isEnglish: Boolean,
     onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
     appColors: AppColors, appLanguage: TextBlocks
@@ -139,8 +161,19 @@ fun SetBody(
 // ------------------
 
 
+/**
+ * General layout for a single setting section with title and the setting button.
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param cardTitle Title displayed on the card.
+ * @param buttonText Text displayed on the card's button.
+ * @param buttonIcon Icon displayed on the card's button.
+ * @param settingFunction Callback invoked when button is pressed.
+ * @param appColors Color palette for the UI.
+ * @param cardStyle Style to apply to the card.
+ */
 @Composable
-fun SetSettingCard(
+private fun SetSettingCard(
     isDarkMode: Boolean, cardTitle: String,
     buttonText: String, buttonIcon: Painter,
     settingFunction: () -> Unit,
@@ -177,8 +210,17 @@ fun SetSettingCard(
 // -------------
 
 
+/**
+ * Displays the Dark Mode setting section
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param onToggleDarkMode Callback to toggle dark mode.
+ * @param appColors Color palette for UI.
+ * @param appLanguage Language strings.
+ * @param cardStyle Card style for the dark mode section.
+ */
 @Composable
-fun SetDarkModeCard(
+private fun SetDarkModeCard(
     isDarkMode: Boolean, onToggleDarkMode: () -> Unit,
     appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle
@@ -215,8 +257,18 @@ fun SetDarkModeCard(
 // ------------
 
 
+/**
+ * Displays the Language setting section
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param isEnglish Current language state
+ * @param onToggleLanguage Callback to toggle dark mode.
+ * @param appColors Color palette for UI.
+ * @param appLanguage Language strings.
+ * @param cardStyle Card style for the dark mode section.
+ */
 @Composable
-fun SetLanguageCard(
+private fun SetLanguageCard(
     isDarkMode: Boolean, isEnglish: Boolean,
     onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle
@@ -246,13 +298,21 @@ fun SetLanguageCard(
 
 
 
-// ------------
-// - Language -
-// ------------
+// ----------------
+// - Notification -
+// ----------------
 
 
+/**
+ * Displays the Notification Timing setting section
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param appColors Color palette for UI.
+ * @param appLanguage Language strings.
+ * @param cardStyle Card style for the dark mode section.
+ */
 @Composable
-fun SetNotificationTimeCard(
+private fun SetNotificationTimeCard(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
@@ -290,8 +350,27 @@ fun SetNotificationTimeCard(
 }
 
 
+/**
+ * Layout for the notification time card including the time display and the button.
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param appColors Color palette for UI.
+ * @param appLanguage Language strings.
+ * @param cardTitle Title for the card.
+ * @param buttonText Text for the edit button.
+ * @param buttonIcon Icon for the edit button.
+ * @param preferences SharedPreferences storing the notification time.
+ * @param hour Current hour for the notification.
+ * @param minutes Current minutes for the notification.
+ * @param toggleHour Callback to update hour state.
+ * @param toggleMinutes Callback to update minutes state.
+ * @param hideClock Callback to hide the time picker.
+ * @param onClickEvent Callback to show the time picker.
+ * @param showTimePicker Whether to show the time picker.
+ * @param cardStyle Style to apply to the card.
+ */
 @Composable
-fun SetSettingTimeCard(
+private fun SetSettingTimeCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardTitle: String, buttonText: String, buttonIcon: Painter,
     preferences: SharedPreferences, hour: Int, minutes: Int,
@@ -355,9 +434,20 @@ fun SetSettingTimeCard(
 }
 
 
+/**
+ * Displays the time picker clock fro editing the notification timing.
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param appColors Color palette for UI.
+ * @param appLanguage Language strings.
+ * @param hour Current hour to display.
+ * @param minutes Current minutes to display.
+ * @param onConfirm Callback invoked with the new hour and minutes.
+ * @param onDismiss Callback invoked when the user cancels the picker.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SetDialTimeInput(
+private fun SetDialTimeInput(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     hour: Int, minutes: Int,
     onConfirm: (Int, Int) -> Unit, onDismiss: () -> Unit
@@ -395,7 +485,14 @@ fun SetDialTimeInput(
 }
 
 
-fun saveNotificationTime(preferences: SharedPreferences, hour: Int, minutes: Int) {
+/**
+ * Saves the selected notification time to the SharedPreferences.
+ *
+ * @param preferences SharedPreferences to save the time.
+ * @param hour Hour to save.
+ * @param minutes Minutes to save.
+ */
+private fun saveNotificationTime(preferences: SharedPreferences, hour: Int, minutes: Int) {
     preferences.edit {
          putInt("notification_hour", hour)
         .putInt("notification_minutes", minutes)

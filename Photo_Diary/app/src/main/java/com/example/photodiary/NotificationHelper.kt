@@ -12,13 +12,23 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 
-class NotificationHelper {
 
+/**
+ * Helper class for managing the app notifications.
+ * Provides functions for creating notification channels and displaying notifications.
+ */
+class NotificationHelper {
 
     private val channelId = "photo_diary"
 
 
-
+    /**
+     * Displays a notification with the given title and message
+     *
+     * @param context Context used to create and send the notification.
+     * @param title Notification title.
+     * @param message Notification body text.
+     */
     fun showNotification(context: Context, title: String, message: String) {
         createNotificationChannel(context)
 
@@ -52,7 +62,11 @@ class NotificationHelper {
     }
 
 
-
+    /**
+     * Creates a notification channel for API level >= 26.
+     *
+     * @param context Context used to create the notification channel.
+     */
     private fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(

@@ -1,6 +1,9 @@
 package com.example.photodiary
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -53,10 +56,23 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil3.compose.AsyncImage
 import java.io.File
 import androidx.camera.core.Preview
+import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
+import com.google.android.gms.location.FusedLocationProviderClient
 import kotlin.contracts.contract
 
 
+/**
+ * Composable card for ADD location screen.
+ * Used for adding a new diary entry. Clears any temporary
+ * images in cache and sets up the body content.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Current localized text provider.
+ * @param weatherViewModel ViewModel for weather data.
+ * @param databaseViewModel ViewModel for database operations.
+ */
 @Composable
 fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
 
@@ -68,8 +84,18 @@ fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlock
 }
 
 
+/**
+ * Sets up the body for the ADD destination screen.
+ * Displays input fields, image selection, weather info, and add button.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Current localized text provider.
+ * @param weatherViewModel ViewModel for weather data.
+ * @param databaseViewModel ViewModel for database operations.
+ */
 @Composable
-fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
+private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
     // Formatting for setting cards
     val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(containerColor = appColors.primary),
@@ -92,8 +118,10 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
     var imageUriError by remember { mutableStateOf<String?>(null) }
 
     // Load the weather
+    val context = LocalContext.current
+    val preferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     LaunchedEffect(Unit) {
-        weatherViewModel.loadWeather()
+        weatherViewModel.loadWeather(context, preferences)
     }
 
     Box(
@@ -158,6 +186,14 @@ fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, 
 // ------------
 
 
+/**
+ * Returns the correct card style depending on the given error state.
+ * Highlights the card border in red, if error has occurred.
+ *
+ * @param cardStyle Base card style.
+ * @param isError True if the card has an input error.
+ * @return Modified AppCardStyle with error styling if needed.
+ */
 @Composable
 fun getCorrectCardStyle(cardStyle: AppCardStyle, isError: Boolean) : AppCardStyle {
     val correctStyle = (
@@ -178,6 +214,11 @@ fun getCorrectCardStyle(cardStyle: AppCardStyle, isError: Boolean) : AppCardStyl
 }
 
 
+/**
+ * Displays the given error message in red text with the needed spacing.
+ *
+ * @param error Error message to be displayed.
+ */
 @Composable
 fun DisplayErrorMessage(error: String) {
     Spacer(Modifier.height(20.dp))
@@ -189,7 +230,12 @@ fun DisplayErrorMessage(error: String) {
 }
 
 
-fun clearCache(context: Context) {
+/**
+ * Clears the temporary cache image files from the cache directory of the app.
+ *
+ * @param context Application context.
+ */
+private fun clearCache(context: Context) {
     context.cacheDir.listFiles()?.forEach { file ->
         if (file.name.startsWith("temp")) file.delete()
     }
@@ -203,8 +249,21 @@ fun clearCache(context: Context) {
 // -------------
 
 
+/**
+ * Creates the card for user input fields. Changes the title and the description
+ * of the diary entry according to the values given by the user.
+ *
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param cardStyle Base card styling.
+ * @param title Current title value.
+ * @param description Current description value.
+ * @param titleError Error message for the title field (if any).
+ * @param toggleTitle Callback to update the title.
+ * @param toggleDescription Callback to update the description.
+ */
 @Composable
-fun SetInfoCard(
+private fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
     title: String, description: String,
@@ -226,8 +285,19 @@ fun SetInfoCard(
 }
 
 
+/**
+ * Provides input fields for the title and the description of the diary entry.
+ *
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param title Current title value.
+ * @param description Current description value.
+ * @param titleError Error message for the title field (if any).
+ * @param toggleTitle Callback to update the title.
+ * @param toggleDescription Callback to update the description.
+ */
 @Composable
-fun SetInfoInputs(
+private fun SetInfoInputs(
     appColors: AppColors, appLanguage: TextBlocks,
     title: String, description: String,
     titleError: String?,
@@ -256,6 +326,17 @@ fun SetInfoInputs(
 }
 
 
+/**
+ * General single text input field layout with optional error display.
+ *
+ * @param value Current text value.
+ * @param toggle Callback to update the text value.
+ * @param maxLines Maximum lines allowed in the input.
+ * @param label Field label text.
+ * @param placeholder Placeholder text when input is empty.
+ * @param error Optional error message.
+ * @param appColors Current color palette.
+ */
 @Composable
 fun SetInfoInput(
     value: String,
@@ -310,8 +391,20 @@ fun SetInfoInput(
 // --------------------------------
 
 
+/**
+ * Sets image getter card allowing the user to select
+ * image via gallery or phone's own camera app.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param cardStyle Base card styling.
+ * @param imageUri Currently selected image URI.
+ * @param imageUriError Error message related to image selection.
+ * @param toggleImageUri Callback to update the selected image URI
+ */
 @Composable
-fun SetImageGetter(
+private fun SetImageGetter(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
@@ -344,8 +437,16 @@ fun SetImageGetter(
 }
 
 
+/**
+ * Button for selecting an image from device's gallery.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param toggleImageUri Callback to update the selected image URI.
+ */
 @Composable
-fun SetAddFileButton(
+private fun SetAddFileButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     toggleImageUri: (Uri?) -> Unit
@@ -376,8 +477,16 @@ fun SetAddFileButton(
 }
 
 
+/**
+ * Button for taking a photo using the device's own camera app.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param toggleImageUri Callback to update the selected image URI.
+ */
 @Composable
-fun SetTakeImageButton(
+private fun SetTakeImageButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     toggleImageUri: (Uri?) -> Unit
@@ -412,7 +521,17 @@ fun SetTakeImageButton(
 }
 
 
-fun getTakeImageEvent(context: Context, cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>, toggleTempImageUri: (Uri?) -> Unit) {
+/**
+ * Handles launching the device camera app to capture an image.
+ *
+ * @param context Application context.
+ * @param cameraLauncher ManagedActivityResultLauncher for TakePicture.
+ * @param toggleTempImageUri Callback to store the temporary image URI.
+ */
+private fun getTakeImageEvent(
+    context: Context, cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
+    toggleTempImageUri: (Uri?) -> Unit
+) {
 
     // Create a temporary file in the cache
     val tempFile = File(
@@ -420,18 +539,29 @@ fun getTakeImageEvent(context: Context, cameraLauncher: ManagedActivityResultLau
         "temp_${System.currentTimeMillis()}.jpg"
     )
 
+    // Reserve a space for the next image from the cache
     val tempUri = FileProvider.getUriForFile(
         context,
         "${context.packageName}.provider",
         tempFile
     )
     toggleTempImageUri(tempUri)
+
+    // Launch the camera app
     cameraLauncher.launch(tempUri)
 }
 
 
+/**
+ * Displays a previously selected image in a styled box.
+ * The image can be either from gallery or the camera as
+ * long the URI is given.
+ *
+ * @param appColors Current color palette.
+ * @param imageUri URI of the image to display.
+ */
 @Composable
-fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
+private fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
     Spacer(Modifier.height(20.dp))
 
     Box(
@@ -463,6 +593,14 @@ fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
 // -----------
 
 
+/**
+ * Displays a weather card with the weather information.
+ *
+ * @param weatherStr Weather information string.
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param cardStyle Card styling configuration.
+ */
 @Composable
 fun SetWeatherCard(
     weatherStr: String,
@@ -493,8 +631,26 @@ fun SetWeatherCard(
 // -------------------
 
 
+/**
+ * Sets the card for the add button, which adds the given diary entry
+ * information to the database.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param cardStyle Card styling configuration.
+ * @param title Current title input for the DiaryEntry.
+ * @param description Current description input for the DiaryEntry.
+ * @param imageUri Selected image URI for the DiaryEntry.
+ * @param weather Current weather info for the DiaryEntry.
+ * @param titleError Callback for title errors.
+ * @param imageUriError Callback for image selection errors.
+ * @param zeroInfoFields Callback to reset input fields.
+ * @param isError True if any input field has error.
+ * @param viewModel ViewModel for database operations.
+ */
 @Composable
-fun SetAddCard(
+private fun SetAddCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
     title: String, description: String, imageUri: Uri?, weather: Weather?,
@@ -518,8 +674,24 @@ fun SetAddCard(
 }
 
 
+/**
+ * Sets the add button for database with the given diary entry.
+ *
+ * @param isDarkMode Indicates if dark theme is active.
+ * @param appColors Current color palette.
+ * @param appLanguage Localized text provider.
+ * @param title Current title input for the DiaryEntry.
+ * @param description Current description input for the DiaryEntry.
+ * @param imageUri Selected image URI for the DiaryEntry.
+ * @param weather Current weather info for the DiaryEntry.
+ * @param titleError Callback for title errors.
+ * @param imageUriError Callback for image selection errors.
+ * @param zeroInfoFields Callback to reset input fields.
+ * @param isError True if any input field has error.
+ * @param viewModel ViewModel for database operations.
+ */
 @Composable
-fun SetAddButton(
+private fun SetAddButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     title: String, description: String, imageUri: Uri?, weather: Weather?,
@@ -556,8 +728,23 @@ fun SetAddButton(
 }
 
 
-
-fun getAddOnClickEvent(
+/**
+ * Gets the lambda function for adding the given diary item to the database.
+ * Performs the item's info validations and saves the image to the app storage.
+ *
+ * @param context Application context.
+ * @param appLanguage Localized text provider.
+ * @param title Title input value for the DiaryEntry.
+ * @param description Description input value for the DiaryEntry.
+ * @param imageUri Selected image URI for the DiaryEntry.
+ * @param weather Current weather info for the DiaryEntry.
+ * @param titleError Callback for title errors.
+ * @param imageUriError Callback for image selection errors.
+ * @param zeroInfoFields Callback to reset input fields.
+ * @param viewModel ViewModel for database operations.
+ * @return Lambda function to execute on button click.
+ */
+private fun getAddOnClickEvent(
     context: Context, appLanguage: TextBlocks,
     title: String, description: String, imageUri: Uri?, weather: Weather?,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
@@ -600,7 +787,16 @@ fun getAddOnClickEvent(
 }
 
 
-fun saveTheImage(context: Context, imageUri: Uri) : String {
+/**
+ * Saves the given image URI to the app internal storage and returns the
+ * generated filename. Clears temporary cache from image files after saving
+ * the URI from the cache.
+ *
+ * @param context Application context.
+ * @param imageUri URI of the image to save.
+ * @return Generated filename of the saved image.
+ */
+private fun saveTheImage(context: Context, imageUri: Uri) : String {
     val inputStream = context.contentResolver.openInputStream(imageUri)
     val imageName = "img_${System.currentTimeMillis()}.jpg"
     val outputFile = File(context.filesDir, imageName)

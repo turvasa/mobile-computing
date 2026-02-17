@@ -1,17 +1,34 @@
 package com.example.photodiary
 
+/**
+ * Finnish implementation of [TextBlocks], providing all textual content
+ * for the Photo Diary app in Finnish.
+ */
 class TextFinnish : TextBlocks {
-    // Navigation
+
+
+
+    // --------------
+    // - Navigation -
+    // --------------
     override val nav_home = "Koti"
     override val nav_settings = "Asetukset"
     override val nav_add = "Lisää"
 
-    // Titles
+
+
+    // ----------
+    // - Titles -
+    // ----------
     override val title_home = "Koti"
     override val title_settings = "Asetukset"
     override val title_add = "Lisää"
 
-    // Settings tab
+
+
+    // ----------------
+    // - Settings tab -
+    // ----------------
     override val settings_title_theme = "Teema"
     override val settings_button_theme_dark = "Tumma"
     override val settings_button_theme_light = "Vaalea"
@@ -22,12 +39,20 @@ class TextFinnish : TextBlocks {
     override val settings_time_title = "Ilmoitukset"
     override val settings_time_change = "Ajoitus"
 
-    // Home tab
+
+
+    // ------------
+    // - Home tab -
+    // ------------
     override val home_description = "Kuvaus"
     override val home_temperature = "Lämpötila"
     override val home_location = "Sijainti"
 
-    // Add tab
+
+
+    // -----------
+    // - Add tab -
+    // -----------
     override val add_create = "Luo"
     override val add_create_new = "Luo uusi Merkintä"
     override val add_info = "Tiedot"
@@ -38,14 +63,22 @@ class TextFinnish : TextBlocks {
     override val add_file_take_photo = "Ota kuva"
     override val add_weather = "Sää"
 
-    // Errors
+
+
+    // ----------
+    // - Errors -
+    // ----------
     override val error_mandatory_field = "Pakollinen tieto!"
     override val error_exceeds_maximum_limit = "Ylittää suurimman sallitun merkki määrän: "
     override val error_must_be_integer = "Täytyy olla kokonaisluku!!"
     override val error_check = "Kelvottomia arvoja annettu! Tarkista kaikki kentät."
     override val error_not_available = "Ei saatavilla."
 
-    // Others
+
+
+    // -----------------
+    // - Miscellaneous -
+    // -----------------
     override val loading = "Ladataan..."
     override val edit = "Muokkaa"
     override val details = "Tiedot"

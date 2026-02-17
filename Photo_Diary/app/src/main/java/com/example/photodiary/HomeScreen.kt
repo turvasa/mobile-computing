@@ -26,6 +26,16 @@ import coil3.compose.AsyncImage
 import java.io.File
 
 
+/**
+ * Composable card for HOME location screen.
+ * Used for displaying the corresponding images of the diary items
+ * in the database from the app storage.
+ *
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param viewModel DatabaseViewModel providing diary entries.
+ * @param navController NavController for navigation between screens.
+ */
 @Composable
 fun HomeCard(
     appColors: AppColors, appLanguage: TextBlocks,
@@ -37,8 +47,18 @@ fun HomeCard(
 }
 
 
+/**
+ * Sets up the body for the HOME destination screen.
+ * Displays the images in a grid.
+ *
+ *
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param viewModel DatabaseViewModel providing diary entries.
+ * @param navController NavController for navigation between screens.
+ */
 @Composable
-fun SetBody(
+private fun SetBody(
     appColors: AppColors, appLanguage: TextBlocks,
     viewModel: DatabaseViewModel, navController: NavHostController
 ) {
@@ -49,8 +69,16 @@ fun SetBody(
 }
 
 
+/**
+ * Displays a grid of all the images of diary items using LazyVerticalGrid.
+ * Each image is clickable for viewing and editing.
+ *
+ * @param appColors Current color palette.
+ * @param viewModel DatabaseViewModel providing diary entries.
+ * @param navController NavController to navigate to detail/edit screens.
+ */
 @Composable
-fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseViewModel, navController: NavHostController) {
+private fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseViewModel, navController: NavHostController) {
     val diaryItems = getImages(viewModel)
     val context = LocalContext.current
 
@@ -99,8 +127,14 @@ fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseViewModel, navControl
 }
 
 
+/**
+ * Gets a list of all the current diary items from the database.
+ *
+ * @param viewModel [DatabaseViewModel] providing diary entries.
+ * @return List of [DiaryItem] objects currently stored in the database.
+ */
 @Composable
-fun getImages(viewModel: DatabaseViewModel) : List<DiaryItem> {
+private fun getImages(viewModel: DatabaseViewModel) : List<DiaryItem> {
     val diaryItems = viewModel.diaryItems.collectAsState()
     return diaryItems.value
 }

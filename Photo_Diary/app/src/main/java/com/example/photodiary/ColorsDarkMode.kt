@@ -2,6 +2,10 @@ package com.example.photodiary
 
 import androidx.compose.ui.graphics.Color
 
+
+/**
+ * Implementation of [AppColors] for dark mode theme.
+ */
 class ColorsDarkMode : AppColors {
     override val primary = Color(0xFF0F172A) // Deep Blue
     override val primary2 = Color(0xFF8B8CF6) // Purple

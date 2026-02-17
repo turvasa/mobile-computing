@@ -26,6 +26,17 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import java.io.File
 
+
+/**
+ * Composable card for ImageDetail location screen.
+ * Used for displaying all the information of the given image.
+ * Shows the image, title, description, and weather information.
+ *
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param itemID ID of the diary item to be displayed.
+ * @param viewModel [DatabaseViewModel] providing diary entries.
+ */
 @Composable
 fun ImageDetailCard(appColors: AppColors, appLanguage: TextBlocks, itemID: Int, viewModel: DatabaseViewModel) {
 
@@ -51,8 +62,16 @@ fun ImageDetailCard(appColors: AppColors, appLanguage: TextBlocks, itemID: Int, 
 }
 
 
+/**
+ * Sets up the body for the ImageDetail destination screen.
+ * Shows the image, title, description, and weather information.
+ *
+ * @param appColors Current color palette.
+ * @param appLanguage Current language texts.
+ * @param diaryItem DiaryItem object to be displayed.
+ */
 @Composable
-fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem) {
+private fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem) {
     // Formatting for info cards
     val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(
@@ -109,6 +128,12 @@ fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem)
 }
 
 
+/**
+ * Displays the image of the given diary item inside a styled box.
+ *
+ * @param appColors Current color palette.
+ * @param diaryItem DiaryItem object to be displayed.
+ */
 @Composable
 fun DisplayImage(appColors: AppColors, diaryItem: DiaryItem) {
     val context = LocalContext.current
@@ -126,8 +151,16 @@ fun DisplayImage(appColors: AppColors, diaryItem: DiaryItem) {
 }
 
 
+/**
+ * Displays a text field for showing the given information.
+ *
+ * @param appColors Current color palette.
+ * @param title Title label of the information card.
+ * @param text Text content to display.
+ * @param cardStyle Styling configuration for the card.
+ */
 @Composable
-fun SetInfoDisplayCard(
+private fun SetInfoDisplayCard(
     appColors: AppColors,
     title: String, text: String, cardStyle: AppCardStyle,
 ) {
@@ -143,4 +176,3 @@ fun SetInfoDisplayCard(
         )
     }
 }
-
