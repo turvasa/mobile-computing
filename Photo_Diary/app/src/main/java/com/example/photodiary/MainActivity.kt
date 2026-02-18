@@ -172,7 +172,7 @@ private fun scheduleDailyNotifications(context: Context, hour: Int, minutes: Int
 
 
 /**
- * Requests location permissions in a composable context.
+ * Requests location permissions on a runtime.
  * Launches permission requests and triggers callbacks depending
  * on whether all required permissions are granted or not.
  *

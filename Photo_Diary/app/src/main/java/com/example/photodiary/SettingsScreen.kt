@@ -149,6 +149,10 @@ private fun SetBody(
                 Spacer(Modifier.height(20.dp))
                 SetNotificationTimeCard(isDarkMode, appColors, appLanguage, cardStyle)
             }
+
+            // Location
+            Spacer(Modifier.height(20.dp))
+            SetLocationCard(isDarkMode, appColors, appLanguage, cardStyle)
         }
     }
 }
@@ -496,5 +500,60 @@ private fun saveNotificationTime(preferences: SharedPreferences, hour: Int, minu
     preferences.edit {
          putInt("notification_hour", hour)
         .putInt("notification_minutes", minutes)
+    }
+}
+
+
+
+
+/**
+ * Displays the Location setting section
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param appColors Color palette for UI.
+ * @param appLanguage Language strings.
+ * @param cardStyle Card style for the dark mode section.
+ */
+@Composable
+private fun SetLocationCard(
+    isDarkMode: Boolean,
+    appColors: AppColors, appLanguage: TextBlocks,
+    cardStyle: AppCardStyle
+) {
+
+    // Card title
+    val cardTitle = appLanguage.settings_title_theme
+
+    // Button text
+    val buttonText =
+        if (isDarkMode) appLanguage.settings_button_theme_light
+        else appLanguage.settings_button_theme_dark
+
+    // Button icon
+    val buttonIcon = painterResource(
+        if (isDarkMode) R.drawable.icon_sun
+        else R.drawable.icon_moon
+    )
+
+    ElevatedCard(
+        colors = cardStyle.colors,
+        elevation = cardStyle.elevation,
+        modifier = cardStyle.modifier
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            TitleCard(appColors, cardTitle, 15.dp, 2.dp, false)
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, bottom = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                SetButton(isDarkMode, appColors, buttonText, settingFunction, buttonIcon)
+            }
+        }
     }
 }
