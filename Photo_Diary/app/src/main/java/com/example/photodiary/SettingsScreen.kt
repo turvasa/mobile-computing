@@ -1,10 +1,15 @@
 package com.example.photodiary
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -13,6 +18,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,7 +45,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -63,16 +72,21 @@ import java.util.Calendar
  */
 @Composable
 fun SettingsCard(
-    isDarkMode: Boolean,
-    isEnglish: Boolean,
-    onToggleDarkMode: () -> Unit,
-    onToggleLanguage: () -> Unit,
-    appColors: AppColors,
-    appLanguage: TextBlocks
+    isDarkMode: Boolean, isEnglish: Boolean,
+    isNotificationON: Boolean, toggleNotification: () -> Unit,
+    hour: Int, minutes: Int, changePreferenceTime: (Int, Int) -> Unit,
+    latitude: Float, longitude: Float, changeDefaultLocation: (Float, Float) -> Unit,
+    isDefaultLocationUsed: Boolean, toggleDefaultLocationON: () -> Unit,
+    onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
+    appColors: AppColors, appLanguage: TextBlocks
 ) {
     SetTabLayout(appColors) {
         SetBody(
             isDarkMode, isEnglish,
+            isNotificationON, toggleNotification,
+            hour, minutes, changePreferenceTime,
+            latitude, longitude, changeDefaultLocation,
+            isDefaultLocationUsed, toggleDefaultLocationON,
             onToggleDarkMode, onToggleLanguage,
             appColors, appLanguage
         )
@@ -95,6 +109,10 @@ fun SettingsCard(
 @Composable
 private fun SetBody(
     isDarkMode: Boolean, isEnglish: Boolean,
+    isNotificationON: Boolean, toggleNotification: () -> Unit,
+    hour: Int, minutes: Int, changePreferenceTime: (Int, Int) -> Unit,
+    latitude: Float, longitude: Float, changeDefaultLocation: (Float, Float) -> Unit,
+    isDefaultLocationUsed: Boolean, toggleDefaultLocationON: () -> Unit,
     onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
     appColors: AppColors, appLanguage: TextBlocks
 ) {
@@ -117,6 +135,8 @@ private fun SetBody(
             .clip(RoundedCornerShape(20.dp))
     )
 
+
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -135,11 +155,17 @@ private fun SetBody(
 
 
             // Dark mode
-            SetDarkModeCard(isDarkMode, onToggleDarkMode, appColors, appLanguage, cardStyle)
+            SetDarkModeCard(
+                isDarkMode, onToggleDarkMode,
+                appColors, appLanguage, cardStyle
+            )
 
             // Language
             Spacer(Modifier.height(20.dp))
-            SetLanguageCard(isDarkMode, isEnglish, onToggleLanguage, appColors, appLanguage, cardStyle)
+            SetLanguageCard(
+                isDarkMode, isEnglish, onToggleLanguage,
+                appColors, appLanguage, cardStyle
+            )
 
             // Notification time
             if (ActivityCompat.checkSelfPermission(
@@ -147,12 +173,20 @@ private fun SetBody(
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 Spacer(Modifier.height(20.dp))
-                SetNotificationTimeCard(isDarkMode, appColors, appLanguage, cardStyle)
+                SetNotificationTimeCard(
+                    isDarkMode, isNotificationON, toggleNotification,
+                    hour, minutes, changePreferenceTime,
+                    appColors, appLanguage, cardStyle
+                )
             }
 
             // Location
             Spacer(Modifier.height(20.dp))
-            SetLocationCard(isDarkMode, appColors, appLanguage, cardStyle)
+            SetLocationCard(
+                isDarkMode, appColors, appLanguage, isDefaultLocationUsed,
+                toggleDefaultLocationON, changeDefaultLocation,
+                cardStyle
+            )
         }
     }
 }
@@ -202,6 +236,45 @@ private fun SetSettingCard(
             ) {
                 SetButton(isDarkMode, appColors, buttonText, settingFunction, buttonIcon)
             }
+        }
+    }
+}
+
+
+/**
+ * Sets up ON/OFF switcher.
+ */
+@Composable
+fun SetOnOffSwitcher(
+    appColors: AppColors, switcherMessage: String,
+    isOn: Boolean, toggleOn: () -> Unit
+) {
+    Row() {
+        Text(
+            text = switcherMessage,
+            color = appColors.secondary3
+        )
+        Spacer(modifier = Modifier.padding(15.dp))
+
+        // ON/OFF switcher
+        Box(
+            modifier = Modifier
+                .padding(6.dp)
+                .aspectRatio(1f)
+                .combinedClickable(
+                    onClick = { toggleOn }
+                )
+        ) {
+            Image(
+                painter = painterResource(
+                    if (isOn) R.drawable.toggle_left else R.drawable.toggle_right
+                ),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .height(32.dp)
+                    .padding(start = 4.dp)
+            )
         }
     }
 }
@@ -311,6 +384,7 @@ private fun SetLanguageCard(
  * Displays the Notification Timing setting section
  *
  * @param isDarkMode Current dark mode state.
+ * @param preferences SharedPreferences storing the settings.
  * @param appColors Color palette for UI.
  * @param appLanguage Language strings.
  * @param cardStyle Card style for the dark mode section.
@@ -318,10 +392,11 @@ private fun SetLanguageCard(
 @Composable
 private fun SetNotificationTimeCard(
     isDarkMode: Boolean,
+    isNotificationON: Boolean, toggleNotification: () -> Unit,
+    hour: Int, minutes: Int, changePreferenceTime: (Int, Int) -> Unit,
     appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
 ) {
-    val context = LocalContext.current
 
     // Card title
     val cardTitle = appLanguage.settings_time_title
@@ -336,9 +411,7 @@ private fun SetNotificationTimeCard(
     )
 
     // Button on click event
-    val preferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    var hour by remember { mutableIntStateOf(preferences.getInt("notification_hour", 20)) }
-    var minutes by remember { mutableIntStateOf(preferences.getInt("notification_minutes", 0)) }
+
     var showTimePicker by remember { mutableStateOf(false) }
     val onClickEvent = { showTimePicker = true }
 
@@ -346,8 +419,8 @@ private fun SetNotificationTimeCard(
     SetSettingTimeCard(
         isDarkMode, appColors, appLanguage,
         cardTitle, buttonText, buttonIcon,
-        preferences, hour, minutes,
-        { hour = it }, { minutes = it },
+        hour, minutes,
+        isNotificationON, toggleNotification, changePreferenceTime,
         { showTimePicker = false },
         onClickEvent, showTimePicker, cardStyle
     )
@@ -363,7 +436,7 @@ private fun SetNotificationTimeCard(
  * @param cardTitle Title for the card.
  * @param buttonText Text for the edit button.
  * @param buttonIcon Icon for the edit button.
- * @param preferences SharedPreferences storing the notification time.
+ * @param preferences SharedPreferences storing the settings.
  * @param hour Current hour for the notification.
  * @param minutes Current minutes for the notification.
  * @param toggleHour Callback to update hour state.
@@ -377,8 +450,9 @@ private fun SetNotificationTimeCard(
 private fun SetSettingTimeCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardTitle: String, buttonText: String, buttonIcon: Painter,
-    preferences: SharedPreferences, hour: Int, minutes: Int,
-    toggleHour: (Int) -> Unit, toggleMinutes: (Int) -> Unit,
+    hour: Int, minutes: Int,
+    isNotificationON: Boolean, toggleNotification: () -> Unit,
+    changePreferenceTime: (Int, Int) -> Unit
     hideClock: () -> Unit, onClickEvent: () -> Unit,
     showTimePicker: Boolean,
     cardStyle: AppCardStyle,
@@ -402,6 +476,12 @@ private fun SetSettingTimeCard(
             ) {
                 // Show edit time button
                 if (!showTimePicker) {
+                    SetOnOffSwitcher(
+                        appColors, appLanguage.settings_time_toggle,
+                        isNotificationON, toggleNotification
+                    )
+                    Spacer(modifier = Modifier.padding(10.dp))
+
                     Row(
                         modifier = Modifier.fillMaxSize(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -422,9 +502,7 @@ private fun SetSettingTimeCard(
                         isDarkMode, appColors, appLanguage,
                         hour, minutes,
                         onConfirm = { newHour, newMinutes ->
-                            toggleHour(newHour)
-                            toggleMinutes(newMinutes)
-                            saveNotificationTime(preferences, newHour, newMinutes)
+                            changePreferenceTime(newHour, newMinutes)
                             hideClock()
                         },
                         onDismiss = {
@@ -489,21 +567,11 @@ private fun SetDialTimeInput(
 }
 
 
-/**
- * Saves the selected notification time to the SharedPreferences.
- *
- * @param preferences SharedPreferences to save the time.
- * @param hour Hour to save.
- * @param minutes Minutes to save.
- */
-private fun saveNotificationTime(preferences: SharedPreferences, hour: Int, minutes: Int) {
-    preferences.edit {
-         putInt("notification_hour", hour)
-        .putInt("notification_minutes", minutes)
-    }
-}
 
 
+// ------------
+// - Location -
+// ------------
 
 
 /**
@@ -518,8 +586,13 @@ private fun saveNotificationTime(preferences: SharedPreferences, hour: Int, minu
 private fun SetLocationCard(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
+    isDefaultLocation: Boolean, toggleDefaultLocationON: () -> Unit,
+    changeDefaultLocation: (Float, Float) -> Unit,
     cardStyle: AppCardStyle
 ) {
+    var isError by remember { mutableStateOf(false) }
+    var toggleError: (Boolean) -> Unit =  { isError = it }
+    val context = LocalContext.current
 
     // Card title
     val cardTitle = appLanguage.settings_title_theme
@@ -552,8 +625,41 @@ private fun SetLocationCard(
                     .padding(top = 40.dp, bottom = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                SetButton(isDarkMode, appColors, buttonText, settingFunction, buttonIcon)
+                SetOnOffSwitcher(
+                    appColors, appLanguage.settings_time_toggle,
+                    isDefaultLocation, toggleDefaultLocationON
+                )
+                Spacer(modifier = Modifier.padding(10.dp))
+
+                Row() {
+                    SetButton(
+                        isDarkMode, appColors, buttonText,
+                        { getLocationSetOnClick(context, toggleError, changeDefaultLocation) },
+                        buttonIcon
+                    )
+
+                    Spacer(modifier = Modifier.padding(15.dp))
+                    Text(text = )
+                }
+
+                if (isError) {
+                    Spacer(modifier = Modifier.padding(15.dp))
+                    DisplayErrorMessage(appLanguage.error_getting_location)
+                }
+
             }
         }
     }
+}
+
+
+fun getLocationSetOnClick(
+    context: Context, toggleLocationError: (Boolean) -> Unit,
+    changeDefaultLocation: (Float, Float) -> Unit
+) {
+    getCurrentLocation(
+        context,
+        changeDefaultLocation,
+        toggleLocationError
+    )
 }

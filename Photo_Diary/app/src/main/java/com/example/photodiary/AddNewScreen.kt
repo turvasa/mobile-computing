@@ -1,21 +1,12 @@
 package com.example.photodiary
 
-import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.ImageProxy
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,16 +41,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil3.compose.AsyncImage
 import java.io.File
-import androidx.camera.core.Preview
-import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
-import com.google.android.gms.location.FusedLocationProviderClient
-import kotlin.contracts.contract
+
 
 
 /**
@@ -111,7 +96,6 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
     var description by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val weather by weatherViewModel.weather.collectAsState(initial = null)
-    //var location by remember { mutableStateOf("") }
 
     // Diary Item info errors
     var titleError by remember { mutableStateOf<String?>(null) }

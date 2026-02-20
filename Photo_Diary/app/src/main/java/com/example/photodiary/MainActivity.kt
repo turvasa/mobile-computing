@@ -64,9 +64,15 @@ import androidx.navigation.compose.rememberNavController
 import com.example.photodiary.ui.theme.PhotoDiaryTheme
 import android.Manifest
 import android.content.Context
+import android.content.SharedPreferences
 import android.icu.util.Calendar
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.edit
 import androidx.navigation.navDeepLink
 import java.util.concurrent.TimeUnit
 import androidx.work.ExistingWorkPolicy
@@ -112,7 +118,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PhotoDiaryTheme {
-                PhotoDiaryApp(db)
+                PhotoDiaryApp(preferences, db)
             }
         }
     }
@@ -244,6 +250,70 @@ enum class AppDestinations(
 
 
 
+// -------------------
+// - Preference Edit -
+// -------------------
+
+
+/**
+ * Saves the selected setting to the [SharedPreferences].
+ *
+ * @param preferences SharedPreferences to save the time.
+ * @param preferenceName Name of the preference to be saved.
+ * @param value Integer value to be saved to the preferences.
+ */
+fun savePreference(preferences: SharedPreferences, preferenceName: String, value: Int) {
+    preferences.edit {
+        putInt(preferenceName, value)
+    }
+}
+
+
+/**
+ * Saves the selected setting to the [SharedPreferences].
+ *
+ * @param preferences SharedPreferences to save the time.
+ * @param preferenceName Name of the preference to be saved.
+ * @param value Float value to be saved to the preferences.
+ */
+fun savePreference(preferences: SharedPreferences, preferenceName: String, value: Float) {
+    preferences.edit {
+        putFloat(preferenceName, value)
+    }
+}
+
+
+/**
+ * Saves the selected setting to the [SharedPreferences].
+ *
+ * @param preferences SharedPreferences to save the time.
+ * @param preferenceName Name of the preference to be saved.
+ * @param value String value to be saved to the preferences.
+ */
+fun savePreference(preferences: SharedPreferences, preferenceName: String, value: String) {
+    preferences.edit {
+        putString(preferenceName, value)
+    }
+}
+
+
+/**
+ * Saves the selected setting to the [SharedPreferences].
+ *
+ * @param preferences SharedPreferences to save the time.
+ * @param preferenceName Name of the preference to be saved.
+ * @param value Boolean value to be saved to the preferences.
+ */
+fun savePreference(preferences: SharedPreferences, preferenceName: String, value: Boolean) {
+    preferences.edit {
+        putBoolean(preferenceName, value)
+    }
+}
+
+
+
+
+
 // ---------
 // - Logic -
 // ---------
@@ -255,10 +325,21 @@ enum class AppDestinations(
  * and overall layout.
  *
  * @param db Application database instance used to create the
- * corresponding view model
+ * corresponding view model.
+ * @param preferences SharedPreferences storing the settings.
  */
 @Composable
-private fun PhotoDiaryApp(db: AppDatabase) {
+private fun PhotoDiaryApp(preferences: SharedPreferences, db: AppDatabase) {
+
+    // Get preferences
+    val isDarkModePreference = preferences.getBoolean( "isDarkMode", false)
+    val isEnglishPreference = preferences.getBoolean( "isEnglish", false)
+    val isNotificationONPreference = preferences.getBoolean("isNotificationON", true)
+    val hourPreference = preferences.getInt("notification_hour", 20)
+    val minutesPreference = preferences.getInt("notification_minutes", 0)
+    val isDefaultLocationUsedPreference = preferences.getBoolean("isDefaultLocationUsed", true)
+    val latitudePreference = preferences.getFloat("defaultLatitude", 65.01236F)
+    val longitudePreference =  preferences.getFloat("defaultLongitude", 25.46816F)
 
     // Navigation control
     val navController = rememberNavController()
@@ -266,12 +347,12 @@ private fun PhotoDiaryApp(db: AppDatabase) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     // Theme setup
-    var isDarkMode by remember { mutableStateOf(false) }
+    var isDarkMode by remember { mutableStateOf(isDarkModePreference) }
     val appColors: AppColors = if (isDarkMode) ColorsDarkMode() else ColorsLightMode()
     SetNavIcons(isDarkMode)
 
     // Language setup
-    var isEnglish by remember { mutableStateOf(true) }
+    var isEnglish by remember { mutableStateOf(isEnglishPreference) }
     val appLanguage: TextBlocks = if (isEnglish) TextEnglish() else TextFinnish()
     SetDestinationLabels(appLanguage)
 
@@ -285,6 +366,17 @@ private fun PhotoDiaryApp(db: AppDatabase) {
     val weatherViewModel: WeatherViewModel = viewModel(
         factory = WeatherViewModelFactory()
     )
+
+    // Notification
+    var isNotificationON by remember { mutableStateOf(isNotificationONPreference) }
+    var hour by remember { mutableIntStateOf(hourPreference) }
+    var minutes by remember { mutableIntStateOf(minutesPreference) }
+
+    // Location
+    var isDefaultLocationUsed by remember { mutableStateOf(isDefaultLocationUsedPreference) }
+    var latitude by remember { mutableStateOf(latitudePreference) }
+    var longitude by remember { mutableStateOf(longitudePreference) }
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -313,10 +405,38 @@ private fun PhotoDiaryApp(db: AppDatabase) {
         SetBodyCard(
             navController,
             isDarkMode, isEnglish,
-            { isDarkMode = !isDarkMode },
-            { isEnglish = !isEnglish },
+            {
+                isDarkMode = !isDarkMode
+                savePreference(preferences, "isDarkMode", isDarkMode)
+            },
+            {
+                isEnglish = !isEnglish
+                savePreference(preferences, "isEnglish", isEnglish)
+            },
             appColors, appLanguage,
-            weatherViewModel, databaseViewModel, innerPadding
+            isNotificationON,
+            {
+                isNotificationON = !isNotificationON
+                savePreference(preferences, "isNotificationON", isNotificationON)
+            },
+            hour, minutes,
+            {
+                hour = it; minutes = it
+                savePreference(preferences, "hour", hour)
+                savePreference(preferences, "minutes", minutes)
+            },
+            latitude, longitude,
+            {
+                latitude = it; longitude = it
+                savePreference(preferences, "defaultLatitude", latitude)
+                savePreference(preferences, "defaultLongitude", longitude)
+            },
+            isDefaultLocationUsed,
+            {
+                savePreference(preferences, "isDefaultLocationUsed", isDefaultLocationUsed)
+            },
+            weatherViewModel, databaseViewModel, innerPadding,
+
         )
     }
 }
@@ -458,6 +578,11 @@ private fun SetBodyCard(
     isDarkMode: Boolean, isEnglish: Boolean,
     onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
     appColors: AppColors, appLanguage: TextBlocks,
+    isNotificationON: Boolean, toggleNotification: () -> Unit,
+    hour: Int, minutes: Int,
+    changePreferenceTime: (Int, Int) -> Unit,
+    latitude: Float, longitude: Float, changeDefaultLocation: (Float, Float) -> Unit,
+    isDefaultLocationUsed: Boolean, toggleDefaultLocation: () -> Unit,
     weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel, innerPadding: PaddingValues
 ) {
     NavHost(
@@ -468,7 +593,15 @@ private fun SetBodyCard(
 
         // Settings
         composable(AppDestinations.SETTINGS.route) {
-            SettingsCard(isDarkMode, isEnglish, onToggleDarkMode, onToggleLanguage, appColors, appLanguage)
+            SettingsCard(
+                isDarkMode, isEnglish,
+                isNotificationON, toggleNotification,
+                hour, minutes, changePreferenceTime,
+                latitude, longitude, changeDefaultLocation,
+                isDefaultLocationUsed, toggleDefaultLocation,
+                onToggleDarkMode, onToggleLanguage,
+                appColors, appLanguage
+            )
         }
 
         // Home

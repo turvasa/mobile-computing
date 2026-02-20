@@ -56,6 +56,14 @@ interface TextBlocks {
     val settings_time_title: String
     /** Button text to change notification time */
     val settings_time_change: String
+    /** Toggle notification ON/OFF description */
+    val settings_time_toggle: String
+    /** Title for location section */
+    val setting_title_location: String
+    /** Description of defining default location */
+    val setting_location_set_default: String
+    /** Toggle default location ON/OFF description */
+    val settings_location_toggle: String
 
 
 
@@ -108,6 +116,9 @@ interface TextBlocks {
     val error_check: String
     /** Error shown when a feature or data is not available */
     val error_not_available: String
+
+    /** Unable to get location error */
+    val error_getting_location: String
 
 
 

@@ -38,6 +38,10 @@ class TextEnglish : TextBlocks {
     override val settings_button_time_dismiss = "Dismiss"
     override val settings_time_title = "Notifications"
     override val settings_time_change = "Timing"
+    override val settings_time_toggle = "Allow notifications:"
+    override val setting_title_location = "Location"
+    override val setting_location_set_default = "Define default location"
+    override val settings_location_toggle = "Use ONLY default location:"
 
 
 
@@ -73,6 +77,7 @@ class TextEnglish : TextBlocks {
     override val error_must_be_integer = "Value must be integer!"
     override val error_check = "Invalid values given! Check all fields."
     override val error_not_available = "Not available."
+    override val error_getting_location = "Unable to get location. Try again."
 
 
 

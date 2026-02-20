@@ -13,7 +13,7 @@ import android.location.Geocoder
  * @param cityCallback Callback event for getting the city name.
  * @param countryCallback Callback event for getting the country name.
  */
-class LocationListener(
+private class LocationNameListener(
     private val cityCallback: (String?) -> Unit,
     private val countryCallback: (String?) -> Unit
 ) : Geocoder.GeocodeListener {
@@ -61,7 +61,7 @@ fun getLocationName(
     val geocoder = Geocoder(context)
     geocoder.getFromLocation(
         latitude.toDouble(), longitude.toDouble(), 1,
-        LocationListener(cityCallback, countryCallback)
+        LocationNameListener(cityCallback, countryCallback)
     )
 }
 

@@ -15,6 +15,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -98,8 +100,8 @@ class WeatherViewModel : ViewModel() {
 
         Log.d("Location", "Location not found")
 
-        val latitude = preferences.getFloat("default_latitude", 65.01236F)
-        val longitude = preferences.getFloat("default_longitude", 25.46816F)
+        val latitude = preferences.getFloat("defaultLatitude", 65.01236F)
+        val longitude = preferences.getFloat("defaultLongitude", 25.46816F)
         sendWeatherAPICall(latitude, longitude)
     }
 
@@ -110,11 +112,13 @@ class WeatherViewModel : ViewModel() {
     // - Location -
     // ------------
 
+
     private var fusedLocationProviderClient: FusedLocationProviderClient? = null
 
 
     /**
      * Sends the last known user location asynchronously to the Weather API.
+     *
      * Source: https://medium.com/@munbonecci/how-to-get-your-location-in-jetpack-compose-f085031df4c1
      *
      * @param preferences SharedPreferences for default location fallback.
@@ -151,21 +155,6 @@ class WeatherViewModel : ViewModel() {
     }
 
 
-    /**
-     * Checks if location permissions are granted.
-     * Source: https://medium.com/@munbonecci/how-to-get-your-location-in-jetpack-compose-f085031df4c1
-     *
-     * @return true if both ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION permissions are granted; false otherwise.
-     */
-    private fun areLocationPermissionsGranted(context: Context): Boolean {
-        return (
-                ActivityCompat.checkSelfPermission(
-                    context, Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-                        &&
-                        ActivityCompat.checkSelfPermission(
-                            context, Manifest.permission.ACCESS_COARSE_LOCATION
-                        ) == PackageManager.PERMISSION_GRANTED
-                )
-    }
+
+
 }

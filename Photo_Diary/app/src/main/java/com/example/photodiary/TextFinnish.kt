@@ -38,7 +38,10 @@ class TextFinnish : TextBlocks {
     override val settings_button_time_dismiss = "Hylkää"
     override val settings_time_title = "Ilmoitukset"
     override val settings_time_change = "Ajoitus"
-
+    override val settings_time_toggle = "Salli ilmoitukset: "
+    override val setting_title_location = "Sijainti"
+    override val setting_location_set_default = "Määritä oletus sijainti"
+    override val settings_location_toggle = "Käytä VAIN oletus sijaintija: "
 
 
     // ------------
@@ -73,6 +76,8 @@ class TextFinnish : TextBlocks {
     override val error_must_be_integer = "Täytyy olla kokonaisluku!!"
     override val error_check = "Kelvottomia arvoja annettu! Tarkista kaikki kentät."
     override val error_not_available = "Ei saatavilla."
+    override val error_getting_location = "Sijainti ei ollut saatavilla. Kokeile uudestaan."
+
 
 
 
