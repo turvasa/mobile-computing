@@ -52,6 +52,7 @@ private class LocationNameListener(
  *
  * @param latitude Location's latitude
  * @param longitude Location's longitude
+ * @param context Application context used for getting the location name.
  * @param cityCallback Callback event for getting the city name.
  * @param countryCallback Callback event for getting the country name.
  */

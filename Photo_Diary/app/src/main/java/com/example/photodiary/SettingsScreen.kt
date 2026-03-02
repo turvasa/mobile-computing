@@ -642,7 +642,8 @@ private fun SetLocationCardBody(
             {
                 if (areLocationPermissionsGranted(context)) {
                     getCurrentLocation(
-                        context,changeDefaultLocation,
+                        context,
+                        changeDefaultLocation,
                         toggleError
                     )
                 }
