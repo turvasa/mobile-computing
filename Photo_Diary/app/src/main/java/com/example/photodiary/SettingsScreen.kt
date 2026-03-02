@@ -1,36 +1,20 @@
 package com.example.photodiary
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -39,25 +23,18 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.core.content.edit
-import androidx.room.util.TableInfo
-import java.util.Calendar
+import java.util.Locale
 
 
 /**
@@ -129,7 +106,7 @@ private fun SetBody(
             .fillMaxWidth()
             .wrapContentHeight()
             .border(
-                2.dp,
+                3.dp,
                 appColors.cardBorder,
                 RoundedCornerShape(20.dp)
             )
@@ -147,14 +124,9 @@ private fun SetBody(
 
         TitleCard(appColors, appLanguage.title_settings, 6.dp, 0.dp, true)
 
-        Column(
-            modifier = Modifier
-                .wrapContentHeight()
-                .padding(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ){
-
-
+        SetDefaultColumn(
+            paddingValues = PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
+        ) {
             // Dark mode
             SetDarkModeCard(
                 isDarkMode, onToggleDarkMode,
@@ -184,7 +156,7 @@ private fun SetBody(
             // Location
             Spacer(Modifier.height(20.dp))
             SetLocationCard(
-                isDarkMode, appColors, appLanguage,
+                isDarkMode, isEnglish, appColors, appLanguage,
                 latitude, longitude, isDefaultLocationUsed,
                 toggleDefaultLocationON, changeDefaultLocation,
                 cardStyle
@@ -230,12 +202,7 @@ private fun SetSettingCard(
         ) {
             TitleCard(appColors, cardTitle, 15.dp, 2.dp, false)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp, bottom = 40.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            SetDefaultColumn(PaddingValues(top = 40.dp, bottom = 40.dp)) {
                 SetButton(isDarkMode, appColors, buttonText, settingFunction, buttonIcon)
             }
         }
@@ -251,11 +218,7 @@ fun SetOnOffSwitcher(
     appColors: AppColors, switcherMessage: String,
     isOn: Boolean, toggleOn: () -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
+    SetDefaultRow(PaddingValues(0.dp)) {
         Text(
             text = switcherMessage,
             color = appColors.mainText
@@ -275,8 +238,8 @@ fun SetOnOffSwitcher(
         ) {
             DisplayIcon(
                 painterResource(
-                    if (isOn) R.drawable.toggle_left
-                    else R.drawable.toggle_right
+                    if (isOn) R.drawable.toggle_right
+                    else R.drawable.toggle_left
                 ),
                 48.dp
             )
@@ -410,10 +373,7 @@ private fun SetNotificationTimeCard(
     val buttonText = appLanguage.settings_time_change
 
     // Button icon
-    val buttonIcon = painterResource(
-        if (isDarkMode) R.drawable.icon_notification_light
-        else R.drawable.icon_notification_light
-    )
+    val buttonIcon = painterResource(R.drawable.icon_notification_clock)
 
     // Button on click event
 
@@ -473,12 +433,7 @@ private fun SetSettingTimeCard(
         ) {
             TitleCard(appColors, cardTitle, 15.dp, 2.dp, false)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp, bottom = 40.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            SetDefaultColumn(PaddingValues(top = 40.dp, bottom = 40.dp)) {
                 // Show edit time button
                 if (!showTimePicker) {
                     SetOnOffSwitcher(
@@ -487,11 +442,7 @@ private fun SetSettingTimeCard(
                     )
                     Spacer(modifier = Modifier.padding(10.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
+                    SetDefaultRow(PaddingValues(0.dp)) {
                         SetButton(isDarkMode, appColors, buttonText, onClickEvent, buttonIcon)
                         Spacer(modifier = Modifier.padding(10.dp))
                         Text(
@@ -545,27 +496,19 @@ private fun SetDialTimeInput(
         is24Hour = true
     )
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    )  {
+    SetDefaultColumn(paddingValues = PaddingValues(0.dp)) {
         TimePicker(timePickerState)
 
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
+        SetDefaultRow(paddingValues = PaddingValues(0.dp)) {
             SetButton(
                 isDarkMode, appColors, appLanguage.settings_button_time_confirm,
                 { onConfirm(timePickerState.hour, timePickerState.minute) },
-                painterResource(R.drawable.icon_confirm_time_light)
+                painterResource(R.drawable.icon_confirm_time)
             )
 
             SetButton(
                 isDarkMode, appColors, appLanguage.settings_button_time_dismiss,
-                onDismiss, painterResource(R.drawable.icon_cancel_light)
+                onDismiss, painterResource(R.drawable.icon_cancel)
             )
         }
     }
@@ -589,7 +532,7 @@ private fun SetDialTimeInput(
  */
 @Composable
 private fun SetLocationCard(
-    isDarkMode: Boolean,
+    isDarkMode: Boolean, isEnglish: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     latitude: Float, longitude: Float,
     isDefaultLocation: Boolean, toggleDefaultLocationON: () -> Unit,
@@ -597,7 +540,7 @@ private fun SetLocationCard(
     cardStyle: AppCardStyle
 ) {
     var isError by remember { mutableStateOf(false) }
-    var toggleError: (Boolean) -> Unit =  { isError = it }
+    val toggleError: (Boolean) -> Unit =  { isError = it }
     val context = LocalContext.current
 
     // Card title
@@ -607,10 +550,7 @@ private fun SetLocationCard(
     val buttonText = appLanguage.settings_location_set_default
 
     // Button icon
-    val buttonIcon = painterResource(
-        if (isDarkMode) R.drawable.icon_location_light
-        else R.drawable.icon_location_light
-    )
+    val buttonIcon = painterResource(R.drawable.icon_location)
 
     // Location permissions
     val launchPermissionRequest = rememberLocationPermissionLauncher(
@@ -631,7 +571,8 @@ private fun SetLocationCard(
             longitude,
             context,
             { cityName = it },
-            { countryName = it }
+            { countryName = it },
+            if (isEnglish) Locale.ENGLISH else Locale.forLanguageTag("fi")
         )
     }
 
@@ -646,72 +587,88 @@ private fun SetLocationCard(
         ) {
             TitleCard(appColors, cardTitle, 15.dp, 2.dp, false)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp, bottom = 40.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                SetOnOffSwitcher(
-                    appColors, appLanguage.settings_location_toggle,
-                    isDefaultLocation, toggleDefaultLocationON
+            SetDefaultColumn(PaddingValues(top = 40.dp, bottom = 40.dp)) {
+                SetLocationCardBody(
+                    isDarkMode, appColors, appLanguage,
+                    isDefaultLocation, toggleDefaultLocationON,
+                    changeDefaultLocation, cityName, countryName,
+                    isError, toggleError, buttonText, buttonIcon,
+                    launchPermissionRequest, context
                 )
-                Spacer(modifier = Modifier.padding(10.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    SetLocationCardBody(
-                        isDarkMode, appColors, appLanguage,
-                        cityName, countryName,
-                        changeDefaultLocation, toggleError,
-                        isError, context
-                    )
             }
         }
     }
 }
 
 
+/**
+ * Sets the card body layout for the location.
+ *
+ * @param isDarkMode Current dark mode state.
+ * @param appColors Color palette for UI styling.
+ * @param appLanguage Localized text provider.
+ * @param isDefaultLocation Indicates whether default location usage is enabled.
+ * @param toggleDefaultLocationON Callback to toggle default location setting.
+ * @param changeDefaultLocation Callback invoked when location coordinates are updated.
+ * @param cityName Name of the detected city (nullable).
+ * @param countryName Name of the detected country (nullable).
+ * @param isError Indicates whether a location retrieval error occurred.
+ * @param toggleError Callback to update error state.
+ * @param buttonText Text displayed on the location action button.
+ * @param buttonIcon Icon displayed on the location action button.
+ * @param launchPermissionRequest Function to launch runtime location permission request.
+ * @param context Android context used for location services.
+ */
 @Composable
 private fun SetLocationCardBody(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    cityName: String, countryName: String,
+    isDefaultLocation: Boolean, toggleDefaultLocationON: () -> Unit,
     changeDefaultLocation: (Float, Float) -> Unit,
-    toggleError: (Boolean) -> Unit, isError: Boolean,
+    cityName: String?, countryName: String?,
+    isError: Boolean, toggleError: (Boolean) -> Unit,
+    buttonText: String, buttonIcon: Painter,
+    launchPermissionRequest: () -> Unit,
     context: Context
 ) {
-    SetButton(
-        isDarkMode, appColors, buttonText,
-        {
-            if (areLocationPermissionsGranted(context)) {
-                getCurrentLocation(context, changeDefaultLocation, toggleError)
-            }
-            else {
-                launchPermissionRequest()
-            }
-        },
-        buttonIcon
+    SetOnOffSwitcher(
+        appColors, appLanguage.settings_location_toggle,
+        isDefaultLocation, toggleDefaultLocationON
     )
-
     Spacer(modifier = Modifier.padding(10.dp))
-    Text(
-        text = "$cityName, $countryName",
-        color = appColors.mainText
-    )
 
-    DisplayIcon(
-        painterResource(
-            if (isDarkMode) R.drawable.icon_pin_light
-            else R.drawable.icon_pin_light
-        ),
-        25.dp
-    )
+    SetDefaultRow(PaddingValues(0.dp)) {
+        SetButton(
+            isDarkMode, appColors, buttonText,
+            {
+                if (areLocationPermissionsGranted(context)) {
+                    getCurrentLocation(
+                        context,changeDefaultLocation,
+                        toggleError
+                    )
+                }
+                else {
+                    launchPermissionRequest()
+                }
+            },
+            buttonIcon
+        )
 
-    if (isError) {
-        Spacer(modifier = Modifier.padding(15.dp))
-        DisplayErrorMessage(appLanguage.error_getting_location)
+        Spacer(modifier = Modifier.padding(3.dp))
+        Text(
+            text = "$cityName, $countryName",
+            color = appColors.mainText
+        )
+
+        DisplayIcon(
+            painterResource(R.drawable.icon_pin),
+            25.dp
+        )
+
+        if (isError) {
+            Spacer(modifier = Modifier.padding(15.dp))
+            DisplayErrorMessage(appLanguage.error_getting_location)
+        }
     }
-} 
+}
+
+

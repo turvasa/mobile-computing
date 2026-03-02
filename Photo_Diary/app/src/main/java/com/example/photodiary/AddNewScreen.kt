@@ -8,18 +8,18 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -34,17 +34,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import java.io.File
 import androidx.core.content.FileProvider
-
 
 
 /**
@@ -55,16 +57,26 @@ import androidx.core.content.FileProvider
  * @param isDarkMode Indicates if dark theme is active.
  * @param appColors Current color palette.
  * @param appLanguage Current localized text provider.
+ * @param latitude Latitude of the weather's location.
+ * @param longitude Longitude of the weather's location.
  * @param weatherViewModel ViewModel for weather data.
  * @param databaseViewModel ViewModel for database operations.
  */
 @Composable
-fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
+fun AddNewCard(
+    isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
+    latitude: Float, longitude: Float,
+    weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel
+) {
 
     clearCache(LocalContext.current)
 
     SetTabLayout(appColors) {
-        SetBody(isDarkMode, appColors, appLanguage, weatherViewModel, databaseViewModel)
+        SetBody(
+            isDarkMode, appColors, appLanguage,
+            latitude, longitude,
+            weatherViewModel, databaseViewModel
+        )
     }
 }
 
@@ -76,18 +88,24 @@ fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlock
  * @param isDarkMode Indicates if dark theme is active.
  * @param appColors Current color palette.
  * @param appLanguage Current localized text provider.
+ * @param latitude Latitude of the weather's location.
+ * @param longitude Longitude of the weather's location.
  * @param weatherViewModel ViewModel for weather data.
  * @param databaseViewModel ViewModel for database operations.
  */
 @Composable
-private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
+private fun SetBody(
+    isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
+    latitude: Float, longitude: Float,
+    weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel
+) {
     // Formatting for setting cards
     val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(containerColor = appColors.cardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(2.dp, appColors.cardBorder, RoundedCornerShape(20.dp))
+            .border(3.dp, appColors.cardBorder, RoundedCornerShape(20.dp))
             .clip(RoundedCornerShape(20.dp))
     )
 
@@ -117,12 +135,9 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
 
         TitleCard(appColors, appLanguage.title_add, 6.dp, 0.dp, true)
 
-        Column(
-            modifier = Modifier
-                .wrapContentHeight()
-                .padding(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ){
+        SetDefaultColumn(
+            PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
+        ) {
 
             SetInfoCard(
                 appColors, appLanguage, cardStyle,
@@ -142,8 +157,11 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
             Spacer(Modifier.height(20.dp))
 
             weather?.let { currentWeather ->
+                val temperature = currentWeather.getTemperature()
+                val locationName = currentWeather.name
+                val weatherIcon = currentWeather.getIconString()
                 SetWeatherCard(
-                    currentWeather.toString(),
+                    locationName, temperature, weatherIcon,
                     appColors, appLanguage, cardStyle
                 )
                 Spacer(Modifier.height(20.dp))
@@ -152,10 +170,11 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
             SetAddCard(
                 isDarkMode, appColors, appLanguage, cardStyle,
                 title, description, imageUri, weather,
+                latitude, longitude,
                 { titleError = appLanguage.error_mandatory_field },
                 { imageUriError = appLanguage.error_mandatory_field },
                 { title = ""; description = ""; imageUri = null },
-                (titleError != null || imageUri != null),
+                (titleError != null || imageUriError != null),
                 databaseViewModel
             )
         }
@@ -250,7 +269,7 @@ private fun clearCache(context: Context) {
 private fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
-    title: String, description: String,
+    title: String, description: String?,
     titleError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
 ) {
@@ -283,7 +302,7 @@ private fun SetInfoCard(
 @Composable
 private fun SetInfoInputs(
     appColors: AppColors, appLanguage: TextBlocks,
-    title: String, description: String,
+    title: String, description: String?,
     titleError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
 ) {
@@ -291,7 +310,7 @@ private fun SetInfoInputs(
     // Title
     SetInfoInput(
         title,
-        toggleTitle, 1,
+        toggleTitle, 1, 80.dp,
         appLanguage.add_info_title,
         "The Scenery",
         titleError,
@@ -301,7 +320,7 @@ private fun SetInfoInputs(
     // Description
     SetInfoInput(
         description,
-        toggleDescription, 3,
+        toggleDescription, 8, 200.dp,
         appLanguage.add_info_description,
         "Lorem ipsum dolor sit amet...",
         null,
@@ -323,20 +342,18 @@ private fun SetInfoInputs(
  */
 @Composable
 fun SetInfoInput(
-    value: String,
+    value: String?,
     toggle: (String) -> Unit,
-    maxLines: Int, label: String,
+    maxLines: Int, height: Dp, label: String,
     placeholder: String,
     error: String?,
     appColors: AppColors
 ) {
-    val height = 80 * maxLines
-
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth(0.9f)
-            .height(height.dp),
-        value = value,
+            .height(height),
+        value = value!!,
         onValueChange = toggle,
         maxLines = maxLines,
         label = { Text(
@@ -398,13 +415,12 @@ private fun SetImageGetter(
     SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_file,
-        cardStyle = getCorrectCardStyle(cardStyle, (imageUriError != null))
+        cardStyle = getCorrectCardStyle(cardStyle, (imageUriError != null)),
+        PaddingValues(top = 40.dp, bottom = 40.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
+        SetDefaultRow(PaddingValues(0.dp)) {
             SetAddFileButton(isDarkMode, appColors, appLanguage, toggleImageUri)
+            Spacer(modifier = Modifier.padding(4.dp))
             SetTakeImageButton(isDarkMode, appColors, appLanguage, toggleImageUri)
         }
 
@@ -452,10 +468,7 @@ private fun SetAddFileButton(
     }
 
     // Button icon
-    val icon = painterResource(
-        if (isDarkMode) R.drawable.icon_take_photo_light
-        else R.drawable.icon_take_photo_dark
-    )
+    val icon = painterResource(R.drawable.icon_add_image_file)
 
     SetButton(isDarkMode, appColors, text, onClickEvent, icon)
 }
@@ -496,10 +509,7 @@ private fun SetTakeImageButton(
     val onClickEvent = { getTakeImageEvent(context, cameraLauncher) { tempUri = it } }
 
     // Button icon
-    val icon = painterResource(
-        if (isDarkMode) R.drawable.icon_take_photo_light
-        else R.drawable.icon_take_photo_dark
-    )
+    val icon = painterResource(R.drawable.icon_take_photo)
 
     SetButton(isDarkMode, appColors, text, onClickEvent, icon)
 }
@@ -555,7 +565,7 @@ private fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
             .aspectRatio(1f)
             .border(
                 2.dp,
-                appColors.imageBorder,
+                appColors.cardBorder,
                 RoundedCornerShape(10.dp)
             )
             .clip(RoundedCornerShape(10.dp))
@@ -580,29 +590,103 @@ private fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
 /**
  * Displays a weather card with the weather information.
  *
- * @param weatherStr Weather information string.
+ * @param locationName Name of the location, where the weather is measured.
+ * @param temperature Weather temperature as Celsius.
+ * @param weatherIcon Weather icon's ID string for displaying the corresponding icon image file.
  * @param appColors Current color palette.
  * @param appLanguage Localized text provider.
  * @param cardStyle Card styling configuration.
  */
 @Composable
 fun SetWeatherCard(
-    weatherStr: String,
+    locationName: String, temperature: Double?, weatherIcon: String?,
     appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle
 ) {
 
-    Log.e("API", "Weather card started")
+    Log.d("Weather Icon", "Weather card start")
 
     SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_weather,
-        cardStyle = cardStyle
+        cardStyle = cardStyle,
+        PaddingValues(20.dp)
     ){
-        Text(
-            text = weatherStr.ifEmpty { appLanguage.error_not_available },
-            fontSize = 18.sp,
-            color = appColors.mainText
+        SetDefaultRow(PaddingValues(0.dp)) {
+            Text(
+                text = Weather.formatTemperature(temperature),
+                fontSize = 24.sp,
+                color = appColors.mainText
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+
+            SetDefaultColumn(PaddingValues(0.dp)) {
+                DisplayWeatherIconImage(appColors, weatherIcon)
+                Text(
+                    text = locationName,
+                    fontSize = 14.sp,
+                    color = appColors.mainText
+                )
+            }
+        }
+
+    }
+}
+
+
+/**
+ * Displays the corresponding weather icon given by the OpenWeatherMap ("https://openweathermap.org/img/wn/${iconString}@2x.png").
+ * Both the icon ID and the icon image are provided by the previously named weather API.
+ *
+ * @param appColors Current color palette.
+ * @param weatherIcon Weather icon ID as string provided by the weather API.
+ */
+@Composable
+fun DisplayWeatherIconImage(appColors: AppColors, weatherIcon: String?) {
+
+    Log.d("Weather Icon", weatherIcon ?: "Not found")
+
+    // Icon
+    val iconString = weatherIcon ?:"03d"
+    val weatherIconUri = "https://openweathermap.org/img/wn/$iconString@2x.png"
+
+    // Background
+    val baseColor = appColors.weatherBackground
+    val backgroundColor = Color(
+        red = baseColor.red * 0.8f + 0.2f,
+        green = baseColor.green * 0.8f + 0.2f,
+        blue = baseColor.blue * 0.8f + 0.2f,
+    )
+
+    // Border color
+    val borderGradient = Brush.radialGradient(
+        colors = listOf(
+            backgroundColor,
+            appColors.cardBackground
+        ),
+        radius = 200f
+    )
+
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor
+        ),
+        shape = RectangleShape,
+        modifier = Modifier
+            .border(
+                4.dp,
+                borderGradient,
+                RoundedCornerShape(5.dp)
+            )
+            .clip(RoundedCornerShape(5.dp))
+    ) {
+        AsyncImage(
+            model = weatherIconUri,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .size(64.dp)
+                .padding(start = 4.dp)
         )
     }
 }
@@ -627,6 +711,8 @@ fun SetWeatherCard(
  * @param description Current description input for the DiaryEntry.
  * @param imageUri Selected image URI for the DiaryEntry.
  * @param weather Current weather info for the DiaryEntry.
+ * @param latitude Latitude of the weather's location.
+ * @param longitude Longitude of the weather's location.
  * @param titleError Callback for title errors.
  * @param imageUriError Callback for image selection errors.
  * @param zeroInfoFields Callback to reset input fields.
@@ -637,7 +723,8 @@ fun SetWeatherCard(
 private fun SetAddCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
-    title: String, description: String, imageUri: Uri?, weather: Weather?,
+    title: String, description: String?, imageUri: Uri?, weather: Weather?,
+    latitude: Float, longitude: Float,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, isError: Boolean,
     viewModel: DatabaseViewModel
@@ -650,6 +737,7 @@ private fun SetAddCard(
         SetAddButton(
             isDarkMode, appColors, appLanguage,
             title, description, imageUri, weather,
+            latitude, longitude,
             titleError, imageUriError,
             zeroInfoFields, isError,
             viewModel
@@ -668,6 +756,8 @@ private fun SetAddCard(
  * @param description Current description input for the DiaryEntry.
  * @param imageUri Selected image URI for the DiaryEntry.
  * @param weather Current weather info for the DiaryEntry.
+ * @param latitude Latitude of the weather's location.
+ * @param longitude Longitude of the weather's location.
  * @param titleError Callback for title errors.
  * @param imageUriError Callback for image selection errors.
  * @param zeroInfoFields Callback to reset input fields.
@@ -678,7 +768,8 @@ private fun SetAddCard(
 private fun SetAddButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    title: String, description: String, imageUri: Uri?, weather: Weather?,
+    title: String, description: String?, imageUri: Uri?, weather: Weather?,
+    latitude: Float, longitude: Float,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, isError: Boolean,
     viewModel: DatabaseViewModel
@@ -693,15 +784,13 @@ private fun SetAddButton(
     val onClickEvent = getAddOnClickEvent(
         context, appLanguage,
         title, description, imageUri, weather,
+        latitude, longitude,
         titleError, imageUriError,
         zeroInfoFields, viewModel
     )
 
     // Button icon
-    val icon = painterResource(
-        if (isDarkMode) R.drawable.icon_add_dark
-        else R.drawable.icon_add_light
-    )
+    val icon = painterResource(R.drawable.icon_add_entry)
 
     SetButton(isDarkMode, appColors, text, onClickEvent, icon)
 
@@ -722,6 +811,8 @@ private fun SetAddButton(
  * @param description Description input value for the DiaryEntry.
  * @param imageUri Selected image URI for the DiaryEntry.
  * @param weather Current weather info for the DiaryEntry.
+ * @param latitude Latitude of the weather's location.
+ * @param longitude Longitude of the weather's location.
  * @param titleError Callback for title errors.
  * @param imageUriError Callback for image selection errors.
  * @param zeroInfoFields Callback to reset input fields.
@@ -730,7 +821,8 @@ private fun SetAddButton(
  */
 private fun getAddOnClickEvent(
     context: Context, appLanguage: TextBlocks,
-    title: String, description: String, imageUri: Uri?, weather: Weather?,
+    title: String, description: String?, imageUri: Uri?, weather: Weather?,
+    latitude: Float, longitude: Float,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, viewModel: DatabaseViewModel
 ): () -> Unit {
@@ -759,7 +851,9 @@ private fun getAddOnClickEvent(
                     imageName = savedImageName,
                     temperature = weather?.getTemperature(),
                     weather = weather?.getWeather(),
-                    locationName = weather?.name
+                    weatherIcon = weather?.getIconString(),
+                    latitude = latitude,
+                    longitude = longitude
                 )
                 viewModel.addDiaryItem(diaryItem)
             }

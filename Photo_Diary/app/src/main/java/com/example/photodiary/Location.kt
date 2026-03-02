@@ -22,17 +22,28 @@ import com.google.android.gms.tasks.CancellationTokenSource
 private var fusedLocationProviderClient: FusedLocationProviderClient? = null
 
 
-
+/**
+ * Attempts to get the user's current location.
+ *
+ * If location permission are granted, the current location is requested.
+ * If permissions aren't granted, nothing happens.
+ *
+ * NOTE: Don't handle permission asking from the user.
+ *
+ * @param context Context used to access location services.
+ * @param onGetCurrentLocationSuccess Callback invoked with latitude and longitude on success.
+ * @param isError Callback invoked with boolean value whether the location is got successfully or not.
+ */
 fun getCurrentLocation(
     context: Context,
     onGetCurrentLocationSuccess: (Float, Float) -> Unit,
-    onError: (Boolean) -> Unit
+    isError: (Boolean) -> Unit
 ) {
     fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
     // Check if location permissions are granted
     if (areLocationPermissionsGranted(context)) {
-        getCurrentLocation(onGetCurrentLocationSuccess, onError)
+        getCurrentLocation(onGetCurrentLocationSuccess, isError)
     }
 }
 
@@ -46,15 +57,15 @@ fun getCurrentLocation(
  *
  * @param onGetCurrentLocationSuccess Callback function invoked when the current location is successfully retrieved.
  *        It provides a Pair representing latitude and longitude.
- * @param onError Callback function invoked when an error occurs while retrieving the current location.
- *        It provides the Exception that occurred.
+ * @param isError Callback function invoked whether an error occurs while retrieving the current location or not.
+ *        It is toggled correspondingly.
  * @param priority Indicates the desired accuracy of the location retrieval. Default is high accuracy.
  *        If set to false, it uses balanced power accuracy.
  */
 @SuppressLint("MissingPermission")
 private fun getCurrentLocation(
     onGetCurrentLocationSuccess: (Float, Float) -> Unit,
-    onError: (Boolean) -> Unit,
+    isError: (Boolean) -> Unit,
     priority: Boolean = true
 ) {
     // Determine the accuracy priority based on the 'priority' parameter
@@ -68,11 +79,11 @@ private fun getCurrentLocation(
         location?.let {
             // If location is not null, invoke the success callback with latitude and longitude
             onGetCurrentLocationSuccess(it.latitude.toFloat(), it.longitude.toFloat())
-            onError(false)
+            isError(false)
         }
     }?.addOnFailureListener {
         // If an error occurs, invoke the failure callback with the exception
-        onError(true)
+        isError(true)
     }
 }
 
@@ -146,3 +157,7 @@ fun rememberLocationPermissionLauncher(
         )
     }
 }
+
+
+
+

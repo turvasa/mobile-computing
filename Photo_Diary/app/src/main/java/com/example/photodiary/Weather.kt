@@ -26,6 +26,16 @@ data class Weather(
         fun formatWeather(temperature: Double?, weather: String?, locationName: String?) : String {
             return "$weather || %.1f°C || $locationName".format(temperature)
         }
+
+        /**
+         * Formats temperature.
+         *
+         * @param temperature The temperature in °C.
+         * @return Formatted string like "25.0 °C".
+         */
+        fun formatTemperature(temperature: Double?) : String {
+            return temperature?.let { "%.1f°C".format(temperature) } ?: "-- °C"
+        }
     }
 
 
@@ -53,6 +63,17 @@ data class Weather(
         return weather.firstOrNull()?.main ?: "Unknown"
     }
 
+
+    /** @return The weather icon ID as string, or "Unknown" if not available. */
+    fun getIconString(): String {
+        return weather.firstOrNull()?.icon ?: "03d"
+    }
+
+    /** @return The weather icon URI address for getting the icon image. */
+    fun getWeatherIconUri(iconString: String) : String {
+        return "https://openweathermap.org/img/wn/${iconString}@2x.png"
+    }
+
 }
 
 
@@ -72,9 +93,9 @@ data class Main(
  * Describes specific weather conditions.
  *
  * @property main Short descriptor of the weather.
- * @property description More detailed description.
+ * @property icon Icon ID as string.
  */
 data class WeatherDescription(
     val main: String,
-    val description: String
+    val icon: String
 )

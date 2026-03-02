@@ -2,13 +2,11 @@ package com.example.photodiary
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
@@ -23,7 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 
 /**
@@ -39,7 +39,10 @@ import androidx.compose.ui.unit.dp
  * @param viewModel [DatabaseViewModel] providing access to diary entries.
  */
 @Composable
-fun ImageEditDetailCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, itemID: Int, viewModel: DatabaseViewModel) {
+fun ImageEditDetailCard(
+    isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
+    itemID: Int, viewModel: DatabaseViewModel, navController: NavController
+) {
 
     val diaryItemFlow = remember(itemID) {
         viewModel.getDiaryItemByID(itemID)
@@ -58,7 +61,9 @@ fun ImageEditDetailCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: 
     }
 
     SetTabLayout(appColors) {
-        SetBody(isDarkMode, appColors, appLanguage, diaryItem!!, viewModel)
+        SetBody(
+            isDarkMode, appColors, appLanguage,
+            diaryItem!!, viewModel, navController)
     }
 }
 
@@ -74,7 +79,10 @@ fun ImageEditDetailCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: 
  * @param viewModel [DatabaseViewModel] for updating or deleting the item.
  */
 @Composable
-private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, diaryItem: DiaryItem, viewModel: DatabaseViewModel) {
+private fun SetBody(
+    isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
+    diaryItem: DiaryItem, viewModel: DatabaseViewModel, navController: NavController
+) {
 
     // Formatting for setting cards
     val cardStyle = AppCardStyle(
@@ -107,11 +115,8 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
 
         TitleCard(appColors, appLanguage.edit, 6.dp, 0.dp, true)
 
-        Column(
-            modifier = Modifier
-                .wrapContentHeight()
-                .padding(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+        SetDefaultColumn(
+            PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
         ) {
             DisplayImage(appColors, diaryItem)
 
@@ -121,7 +126,7 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
                 appColors, appLanguage,
                 appLanguage.add_info_title, title,
                 "The Scenery", titleError, appLanguage.add_info_title,
-                1, { title = it; titleError = null },
+                1, 80.dp, { title = it; titleError = null },
                 cardStyle
             )
 
@@ -131,7 +136,7 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
                 appColors, appLanguage,
                 appLanguage.add_info_description, description!!,
                 "Lorem ipsum dolor sit amet...", descriptionError, appLanguage.add_info_description,
-                3, { description = it; descriptionError = null },
+                8, 200.dp, { description = it; descriptionError = null },
                 cardStyle
             )
 
@@ -142,14 +147,15 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
                 cardStyle,
                 diaryItem, title, description!!,
                 {titleError = appLanguage.error_mandatory_field},
-                viewModel
+                viewModel, navController
             )
 
             // Delete button
             Spacer(Modifier.height(20.dp))
             SetDeleteCard(
                 isDarkMode, appColors, appLanguage,
-                cardStyle, diaryItem, viewModel
+                cardStyle, diaryItem,
+                viewModel, navController
             )
         }
     }
@@ -175,7 +181,7 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
 private fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
     title: String, value: String, placeholder: String, error: String?,
-    label: String, maxLines: Int, changeInfo: (String) -> Unit,
+    label: String, maxLines: Int, height: Dp, changeInfo: (String) -> Unit,
     cardStyle: AppCardStyle,
 ) {
     SetCardLayout(
@@ -186,7 +192,7 @@ private fun SetInfoCard(
     ) {
         SetInfoInput(
             value,
-            changeInfo, maxLines,
+            changeInfo, maxLines, height,
             label, placeholder,
             error, appColors
         )
@@ -224,7 +230,8 @@ private fun SetUpdateCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
     cardStyle: AppCardStyle,
     diaryItem: DiaryItem, title: String, description: String,
-    titleError: (String) -> Unit, viewModel: DatabaseViewModel
+    titleError: (String) -> Unit, viewModel: DatabaseViewModel,
+    navController: NavController
 ) {
     SetCardLayout(
         appColors = appColors,
@@ -234,8 +241,7 @@ private fun SetUpdateCard(
         SetUpdateButton(
             isDarkMode, appColors, appLanguage,
             diaryItem, title, description,
-            titleError,
-            viewModel
+            titleError, viewModel, navController
         )
     }
 }
@@ -258,7 +264,8 @@ private fun SetUpdateButton(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
     diaryItem: DiaryItem, title: String, description: String,
-    titleError: (String) -> Unit, viewModel: DatabaseViewModel
+    titleError: (String) -> Unit, viewModel: DatabaseViewModel,
+    navController: NavController
 ) {
 
     // Button text
@@ -266,16 +273,13 @@ private fun SetUpdateButton(
 
     // Button click event
     val onClickEvent = getUpdateOnClickEvent(
-        appLanguage,
-        diaryItem, title, description,
-        titleError, viewModel
+        appLanguage, diaryItem,
+        title, description,
+        titleError, viewModel, navController
     )
 
     // Button icon
-    val icon = painterResource(
-        if (isDarkMode) R.drawable.icon_add_dark
-        else R.drawable.icon_add_light
-    )
+    val icon = painterResource(R.drawable.icon_add_entry)
 
     SetButton(isDarkMode, appColors, text, onClickEvent, icon)
 }
@@ -295,9 +299,9 @@ private fun SetUpdateButton(
  */
 private fun getUpdateOnClickEvent(
     appLanguage: TextBlocks,
-    diaryItem: DiaryItem, title: String, description: String,
-    titleError: (String) -> Unit,
-    viewModel: DatabaseViewModel
+    diaryItem: DiaryItem, title: String,
+    description: String, titleError: (String) -> Unit,
+    viewModel: DatabaseViewModel, navController: NavController
 ): () -> Unit {
     return {
         var hasError = false
@@ -317,9 +321,12 @@ private fun getUpdateOnClickEvent(
                 imageName = diaryItem.imageName,
                 temperature = diaryItem.temperature,
                 weather = diaryItem.weather,
-                locationName = diaryItem.locationName
+                weatherIcon = diaryItem.weatherIcon,
+                latitude = diaryItem.latitude,
+                longitude = diaryItem.longitude
             )
             viewModel.updateDiaryItem(updatedDiaryItem)
+            navController.navigate(AppDestinations.HOME.route)
         }
     }
 }
@@ -338,15 +345,17 @@ private fun getUpdateOnClickEvent(
  *
  * @param isDarkMode Indicates whether dark mode is active.
  * @param appColors Current color palette.
- * @param appLanguage Current language texts.
+ * @param appLanguage Localized text provider.
  * @param cardStyle Styling configuration for the card.
  * @param diaryItem Diary item to delete.
  * @param viewModel [DatabaseViewModel] to perform the deletion.
+ * @param navController Navigation controller used to return to home screen after deletion.
  */
 @Composable
 private fun SetDeleteCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: AppCardStyle, diaryItem: DiaryItem, viewModel: DatabaseViewModel
+    cardStyle: AppCardStyle, diaryItem: DiaryItem,
+    viewModel: DatabaseViewModel, navController: NavController
 ) {
     SetCardLayout(
         appColors = appColors,
@@ -355,7 +364,7 @@ private fun SetDeleteCard(
     ) {
         SetDeleteButton(
             isDarkMode, appColors, appLanguage,
-            diaryItem, viewModel
+            diaryItem, viewModel, navController
         )
     }
 }
@@ -373,20 +382,20 @@ private fun SetDeleteCard(
 @Composable
 private fun SetDeleteButton(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    diaryItem: DiaryItem, viewModel: DatabaseViewModel
+    diaryItem: DiaryItem, viewModel: DatabaseViewModel, navController: NavController
 ) {
 
     // Button text
     val text = appLanguage.delete
 
     // Button click event
-    val onClickEvent = { viewModel.deleteDiaryItem(diaryItem) }
+    val onClickEvent = {
+        viewModel.deleteDiaryItem(diaryItem)
+        navController.navigate(AppDestinations.HOME.route)
+    }
 
     // Button icon
-    val icon = painterResource(
-        if (isDarkMode) R.drawable.icon_add_dark
-        else R.drawable.icon_delete_light
-    )
+    val icon = painterResource(R.drawable.icon_delete)
 
     SetButton(isDarkMode, appColors, text, onClickEvent, icon)
 }

@@ -102,7 +102,7 @@ private fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseViewModel, na
                     .aspectRatio(1f)
                     .border(
                         2.dp,
-                        appColors.imageBorder,
+                        appColors.cardBorder,
                         RoundedCornerShape(10.dp)
                     )
                     .clip(RoundedCornerShape(10.dp))

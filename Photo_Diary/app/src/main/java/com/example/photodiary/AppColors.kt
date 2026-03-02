@@ -10,16 +10,18 @@ interface AppColors {
 
     // Background
     val cardBackground: Color
+    val weatherBackground: Color
     val navBackground: Color
+    val buttonBackground: Color
 
     // Text
     val title: Color
     val secondaryText: Color
     val mainText: Color
     val placeholderText: Color
+    val buttonText: Color
 
     // Borders
-    val imageBorder: Color
     val buttonBorder: Color
     val cardBorder: Color
 }

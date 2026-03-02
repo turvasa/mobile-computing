@@ -8,7 +8,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -42,7 +41,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -66,17 +64,17 @@ import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
 import android.icu.util.Calendar
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 import androidx.navigation.navDeepLink
+import androidx.work.ExistingPeriodicWorkPolicy
 import java.util.concurrent.TimeUnit
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 
 
@@ -85,8 +83,8 @@ class MainActivity : ComponentActivity() {
 
     // Request permissions
     val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ){ }
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { }
 
     /**
      * Main entry activity of the application.
@@ -100,15 +98,17 @@ class MainActivity : ComponentActivity() {
 
         // Get permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            requestPermissionLauncher.launch(arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ))
         }
 
         // Set notification requester
         val preferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val hour = preferences.getInt("notification_hour", 20)
-        val minutes = preferences.getInt("notification_minutes", 0)
+        val hour = preferences.getInt("notificationHour", 20)
+        val minutes = preferences.getInt("notificationMinutes", 0)
         scheduleDailyNotifications(this, hour, minutes)
 
         // Database
@@ -157,14 +157,16 @@ private fun scheduleDailyNotifications(context: Context, hour: Int, minutes: Int
 
     // Build the notification requester
     val delay = scheduleTime.timeInMillis - currentTime.timeInMillis
-    val dailyWorkRequest = OneTimeWorkRequestBuilder<DailyNotificationWorker>()
+    val dailyWorkRequest = PeriodicWorkRequestBuilder<DailyNotificationWorker>(
+        1, TimeUnit.DAYS
+    )
         .setInitialDelay(delay, TimeUnit.MILLISECONDS)
         .addTag("daily_notification")
         .build()
 
-    WorkManager.getInstance(context).enqueueUniqueWork(
+    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
         "daily_notification_work",
-        ExistingWorkPolicy.REPLACE,
+        ExistingPeriodicWorkPolicy.REPLACE,
         dailyWorkRequest
     )
 }
@@ -191,9 +193,9 @@ enum class AppDestinations(
     val route: String,
     var icon: Int
 ) {
-    SETTINGS("Settings","settings", R.drawable.icon_settings_light),
-    HOME("Home","home", R.drawable.icon_home_light),
-    ADD("Add","add", R.drawable.icon_take_photo_light),
+    SETTINGS("Settings","settings", R.drawable.icon_nav_settings_light),
+    HOME("Home","home", R.drawable.icon_nav_home_light),
+    ADD("Add","add", R.drawable.icon_nav_add_light),
 }
 
 
@@ -279,6 +281,7 @@ fun savePreference(preferences: SharedPreferences, preferenceName: String, value
  */
 @Composable
 private fun PhotoDiaryApp(preferences: SharedPreferences, db: AppDatabase) {
+    val context = LocalContext.current
 
     // Get preferences
     val isDarkModePreference = preferences.getBoolean( "isDarkMode", false)
@@ -373,6 +376,7 @@ private fun PhotoDiaryApp(preferences: SharedPreferences, db: AppDatabase) {
                 hour = newHour; minutes = newMinutes
                 savePreference(preferences, "notificationHour", hour)
                 savePreference(preferences, "notificationMinutes", minutes)
+                scheduleDailyNotifications(context, hour, minutes)
             },
             latitude, longitude,
             { newLatitude, newLongitude ->
@@ -403,20 +407,20 @@ private fun SetNavIcons(isDarkMode: Boolean) {
 
     // Settings
     AppDestinations.SETTINGS.icon = (
-        if (isDarkMode) R.drawable.icon_settings_dark
-        else R.drawable.icon_settings_light
+        if (isDarkMode) R.drawable.icon_nav_settings_dark
+        else R.drawable.icon_nav_settings_light
     )
 
     // Home
     AppDestinations.HOME.icon = (
-        if (isDarkMode) R.drawable.icon_home_dark
-        else R.drawable.icon_home_light
+        if (isDarkMode) R.drawable.icon_nav_home_dark
+        else R.drawable.icon_nav_home_light
     )
 
     // Home
     AppDestinations.ADD.icon = (
-        if (isDarkMode) R.drawable.icon_take_photo_dark
-        else R.drawable.icon_take_photo_light
+        if (isDarkMode) R.drawable.icon_nav_add_dark
+        else R.drawable.icon_nav_add_light
     )
 }
 
@@ -564,19 +568,26 @@ private fun SetBodyCard(
             AppDestinations.ADD.route,
             deepLinks = listOf(navDeepLink { uriPattern = "photodiary://add" }) // Uri link for notifications
         ) {
-            AddNewCard(isDarkMode, appColors, appLanguage, weatherViewModel, databaseViewModel)
+            AddNewCard(
+                isDarkMode, appColors, appLanguage,
+                latitude, longitude,
+                weatherViewModel, databaseViewModel
+            )
         }
 
         // Detailed image
         composable("imageDetail/{id}") { entry ->
             val item = entry.arguments?.getString("id")!!.toInt()
-            ImageDetailCard(appColors, appLanguage, item, databaseViewModel)
+            ImageDetailCard(appColors, appLanguage, item, databaseViewModel, isEnglish)
         }
 
         // Edit image
         composable("imageEditDetail/{id}") { entry ->
             val item = entry.arguments?.getString("id")!!.toInt()
-            ImageEditDetailCard(isDarkMode, appColors, appLanguage, item, databaseViewModel)
+            ImageEditDetailCard(
+                isDarkMode, appColors, appLanguage,
+                item, databaseViewModel, navController
+            )
         }
     }
 }
@@ -590,7 +601,7 @@ private fun SetBodyCard(
 
 
 /**
- * Genelar layouts ElevatedCard's reusable styling class.
+ * General layouts ElevatedCard's reusable styling class.
  * Can be used to lessen the param count of certain functions.
  *
  * @param colors Card color configuration.
@@ -633,13 +644,7 @@ fun SetCardLayout(
         ) {
             TitleCard(appColors, title, 15.dp, 2.dp, false)
 
-            Column(
-                modifier = Modifier
-                    .padding(contentPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                content = content
-            )
+            SetDefaultColumn(contentPadding, content)
         }
     }
 }
@@ -682,6 +687,52 @@ fun SetTabLayout(
             )
         }
     }
+}
+
+
+/**
+ * Creates a default styled Column layout container.
+ * Used as a reusable wrapper for vertically arranged UI components.
+ *
+ * @param paddingValues Padding applied inside the column container.
+ * @param content Composable content inside the column.
+ */
+@Composable
+fun SetDefaultColumn(
+    paddingValues: PaddingValues,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .wrapContentHeight()
+            .padding(paddingValues),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        content = content
+    )
+}
+
+
+/**
+ * Creates a default styled Row layout container.
+ * Used as a reusable wrapper for horizontally arranged UI components.
+ *
+ * @param paddingValues Padding applied inside the row container.
+ * @param content Composable content inside the row.
+ */
+@Composable
+fun SetDefaultRow(
+    paddingValues: PaddingValues,
+    content: @Composable RowScope.() -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .wrapContentHeight()
+            .padding(paddingValues),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        content = content
+    )
 }
 
 
@@ -747,7 +798,7 @@ fun SetButton(
     Button(
         onClick = onClickEvent,
         colors = ButtonDefaults.buttonColors(
-            containerColor = appColors.placeholderText
+            containerColor = appColors.buttonBackground
         ),
         contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp, start = 12.dp, end = 12.dp),
         shape = RoundedCornerShape(25.dp),
@@ -755,13 +806,13 @@ fun SetButton(
             .wrapContentHeight()
             .border(
                 2.dp,
-                appColors.buttonBorder.copy(alpha = 0.8f),
+                appColors.buttonBorder,
                 RoundedCornerShape(25.dp)
             )
     ) {
 
         Text(
-            color = if (isDarkMode) ColorsLightMode().secondaryText else ColorsDarkMode().secondaryText,
+            color = appColors.buttonText,
             text = text
         )
 

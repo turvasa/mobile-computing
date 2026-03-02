@@ -154,7 +154,4 @@ class WeatherViewModel : ViewModel() {
             }
     }
 
-
-
-
 }

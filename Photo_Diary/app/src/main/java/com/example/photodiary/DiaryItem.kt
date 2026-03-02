@@ -14,17 +14,22 @@ import androidx.room.PrimaryKey
  * @property description Optional description or notes for the diary entry.
  * @property temperature Optional temperature value recorded for the entry.
  * @property weather Optional weather description for the entry.
- * @property locationName Optional name of the location where the entry was created.
+ * @property weatherIcon Optional weather icon ID as string.
+ * @property latitude Latitude of the item's location.
+ * @property longitude Longitude of the item's location.
  */
 @Entity
 data class DiaryItem(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
+
     @ColumnInfo(name = "imageName") val imageName: String,
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "description") val description: String?,
+
     @ColumnInfo(name = "temperature") val temperature: Double?,
     @ColumnInfo(name = "weather") val weather: String?,
-    @ColumnInfo(name = "locationName") val locationName: String?,
+    @ColumnInfo(name = "weatherIcon") val weatherIcon: String?,
 
-    //@ColumnInfo(name = "location") val location: String?
+    @ColumnInfo(name = "latitude") val latitude: Float,
+    @ColumnInfo(name = "longitude") val longitude: Float,
 )

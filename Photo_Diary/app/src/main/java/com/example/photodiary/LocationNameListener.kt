@@ -3,6 +3,7 @@ package com.example.photodiary
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
+import java.util.Locale
 
 
 /**
@@ -56,9 +57,10 @@ private class LocationNameListener(
  */
 fun getLocationName(
     latitude: Float, longitude: Float, context: Context,
-    cityCallback: (String?) -> Unit, countryCallback: (String?) -> Unit
+    cityCallback: (String?) -> Unit, countryCallback: (String?) -> Unit,
+    locale: Locale
 ) {
-    val geocoder = Geocoder(context)
+    val geocoder = Geocoder(context, locale)
     geocoder.getFromLocation(
         latitude.toDouble(), longitude.toDouble(), 1,
         LocationNameListener(cityCallback, countryCallback)
