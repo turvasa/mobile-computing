@@ -28,8 +28,13 @@ class NotificationHelper {
      * @param context Context used to create and send the notification.
      * @param title Notification title.
      * @param message Notification body text.
+     * @param isNotificationsON Whether the notifications are ON or OFF
      */
-    fun showNotification(context: Context, title: String, message: String) {
+    fun showNotification(context: Context, title: String, message: String, isNotificationsON: Boolean) {
+
+        // Send notification only if they are ON
+        if (!isNotificationsON) return
+
         createNotificationChannel(context)
 
         val intent = Intent(context, MainActivity::class.java).apply {

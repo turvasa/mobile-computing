@@ -83,11 +83,11 @@ fun AddNewCard(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlock
 private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks, weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel) {
     // Formatting for setting cards
     val cardStyle = AppCardStyle(
-        colors = CardDefaults.cardColors(containerColor = appColors.primary),
+        colors = CardDefaults.cardColors(containerColor = appColors.cardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(2.dp, appColors.primary2, RoundedCornerShape(20.dp))
+            .border(2.dp, appColors.cardBorder, RoundedCornerShape(20.dp))
             .clip(RoundedCornerShape(20.dp))
     )
 
@@ -341,20 +341,20 @@ fun SetInfoInput(
         maxLines = maxLines,
         label = { Text(
             text = label,
-            color = appColors.secondary3
+            color = appColors.mainText
         )},
         isError = error != null,
         placeholder = { Text(
             text = placeholder,
-            color = appColors.secondaryText,
+            color = appColors.placeholderText,
             fontSize = 15.sp
         )},
         textStyle = TextStyle(
             fontSize = 15.sp,
-            color = appColors.secondaryText
+            color = appColors.placeholderText
         ),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = appColors.secondary2.copy(alpha = 0.6f),
+            focusedContainerColor = appColors.secondaryText.copy(alpha = 0.6f),
             errorBorderColor = Color.Red,
         ),
         supportingText = {
@@ -555,7 +555,7 @@ private fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
             .aspectRatio(1f)
             .border(
                 2.dp,
-                appColors.border,
+                appColors.imageBorder,
                 RoundedCornerShape(10.dp)
             )
             .clip(RoundedCornerShape(10.dp))
@@ -602,7 +602,7 @@ fun SetWeatherCard(
         Text(
             text = weatherStr.ifEmpty { appLanguage.error_not_available },
             fontSize = 18.sp,
-            color = appColors.secondary3
+            color = appColors.mainText
         )
     }
 }

@@ -59,9 +59,9 @@ interface TextBlocks {
     /** Toggle notification ON/OFF description */
     val settings_time_toggle: String
     /** Title for location section */
-    val setting_title_location: String
+    val settings_title_location: String
     /** Description of defining default location */
-    val setting_location_set_default: String
+    val settings_location_set_default: String
     /** Toggle default location ON/OFF description */
     val settings_location_toggle: String
 

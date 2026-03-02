@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -119,7 +120,7 @@ private fun SetBody(
 
     val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(
-            containerColor = appColors.primary
+            containerColor = appColors.cardBackground
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 20.dp
@@ -129,7 +130,7 @@ private fun SetBody(
             .wrapContentHeight()
             .border(
                 2.dp,
-                appColors.primary2,
+                appColors.cardBorder,
                 RoundedCornerShape(20.dp)
             )
             .clip(RoundedCornerShape(20.dp))
@@ -183,7 +184,8 @@ private fun SetBody(
             // Location
             Spacer(Modifier.height(20.dp))
             SetLocationCard(
-                isDarkMode, appColors, appLanguage, isDefaultLocationUsed,
+                isDarkMode, appColors, appLanguage,
+                latitude, longitude, isDefaultLocationUsed,
                 toggleDefaultLocationON, changeDefaultLocation,
                 cardStyle
             )
@@ -249,31 +251,34 @@ fun SetOnOffSwitcher(
     appColors: AppColors, switcherMessage: String,
     isOn: Boolean, toggleOn: () -> Unit
 ) {
-    Row() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
         Text(
             text = switcherMessage,
-            color = appColors.secondary3
+            color = appColors.mainText
         )
-        Spacer(modifier = Modifier.padding(15.dp))
+
+        Spacer(modifier = Modifier.padding(2.dp))
 
         // ON/OFF switcher
         Box(
             modifier = Modifier
-                .padding(6.dp)
-                .aspectRatio(1f)
                 .combinedClickable(
-                    onClick = { toggleOn }
+                    onClick = { toggleOn() }
                 )
+                .wrapContentHeight()
+                .clip(RoundedCornerShape(20.dp)),
+            contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(
-                    if (isOn) R.drawable.toggle_left else R.drawable.toggle_right
+            DisplayIcon(
+                painterResource(
+                    if (isOn) R.drawable.toggle_left
+                    else R.drawable.toggle_right
                 ),
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .height(32.dp)
-                    .padding(start = 4.dp)
+                48.dp
             )
         }
     }
@@ -452,7 +457,7 @@ private fun SetSettingTimeCard(
     cardTitle: String, buttonText: String, buttonIcon: Painter,
     hour: Int, minutes: Int,
     isNotificationON: Boolean, toggleNotification: () -> Unit,
-    changePreferenceTime: (Int, Int) -> Unit
+    changePreferenceTime: (Int, Int) -> Unit,
     hideClock: () -> Unit, onClickEvent: () -> Unit,
     showTimePicker: Boolean,
     cardStyle: AppCardStyle,
@@ -491,7 +496,7 @@ private fun SetSettingTimeCard(
                         Spacer(modifier = Modifier.padding(10.dp))
                         Text(
                             text = "%02d:%02d".format(hour, minutes),
-                            color = appColors.secondary3
+                            color = appColors.mainText
                         )
                     }
                 }
@@ -586,6 +591,7 @@ private fun SetDialTimeInput(
 private fun SetLocationCard(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
+    latitude: Float, longitude: Float,
     isDefaultLocation: Boolean, toggleDefaultLocationON: () -> Unit,
     changeDefaultLocation: (Float, Float) -> Unit,
     cardStyle: AppCardStyle
@@ -595,18 +601,39 @@ private fun SetLocationCard(
     val context = LocalContext.current
 
     // Card title
-    val cardTitle = appLanguage.settings_title_theme
+    val cardTitle = appLanguage.settings_title_location
 
     // Button text
-    val buttonText =
-        if (isDarkMode) appLanguage.settings_button_theme_light
-        else appLanguage.settings_button_theme_dark
+    val buttonText = appLanguage.settings_location_set_default
 
     // Button icon
     val buttonIcon = painterResource(
-        if (isDarkMode) R.drawable.icon_sun
-        else R.drawable.icon_moon
+        if (isDarkMode) R.drawable.icon_location_light
+        else R.drawable.icon_location_light
     )
+
+    // Location permissions
+    val launchPermissionRequest = rememberLocationPermissionLauncher(
+        {
+            getCurrentLocation(context, changeDefaultLocation, toggleError)
+        },
+        {
+            toggleError(true)
+        }
+    )
+
+    // Get location names
+    var cityName by remember { mutableStateOf<String?>(null) }
+    var countryName by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(latitude, longitude) {
+        getLocationName(
+            latitude,
+            longitude,
+            context,
+            { cityName = it },
+            { countryName = it }
+        )
+    }
 
     ElevatedCard(
         colors = cardStyle.colors,
@@ -626,40 +653,65 @@ private fun SetLocationCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SetOnOffSwitcher(
-                    appColors, appLanguage.settings_time_toggle,
+                    appColors, appLanguage.settings_location_toggle,
                     isDefaultLocation, toggleDefaultLocationON
                 )
                 Spacer(modifier = Modifier.padding(10.dp))
 
-                Row() {
-                    SetButton(
-                        isDarkMode, appColors, buttonText,
-                        { getLocationSetOnClick(context, toggleError, changeDefaultLocation) },
-                        buttonIcon
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    SetLocationCardBody(
+                        isDarkMode, appColors, appLanguage,
+                        cityName, countryName,
+                        changeDefaultLocation, toggleError,
+                        isError, context
                     )
-
-                    Spacer(modifier = Modifier.padding(15.dp))
-                    Text(text = )
-                }
-
-                if (isError) {
-                    Spacer(modifier = Modifier.padding(15.dp))
-                    DisplayErrorMessage(appLanguage.error_getting_location)
-                }
-
             }
         }
     }
 }
 
 
-fun getLocationSetOnClick(
-    context: Context, toggleLocationError: (Boolean) -> Unit,
-    changeDefaultLocation: (Float, Float) -> Unit
+@Composable
+private fun SetLocationCardBody(
+    isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
+    cityName: String, countryName: String,
+    changeDefaultLocation: (Float, Float) -> Unit,
+    toggleError: (Boolean) -> Unit, isError: Boolean,
+    context: Context
 ) {
-    getCurrentLocation(
-        context,
-        changeDefaultLocation,
-        toggleLocationError
+    SetButton(
+        isDarkMode, appColors, buttonText,
+        {
+            if (areLocationPermissionsGranted(context)) {
+                getCurrentLocation(context, changeDefaultLocation, toggleError)
+            }
+            else {
+                launchPermissionRequest()
+            }
+        },
+        buttonIcon
     )
-}
+
+    Spacer(modifier = Modifier.padding(10.dp))
+    Text(
+        text = "$cityName, $countryName",
+        color = appColors.mainText
+    )
+
+    DisplayIcon(
+        painterResource(
+            if (isDarkMode) R.drawable.icon_pin_light
+            else R.drawable.icon_pin_light
+        ),
+        25.dp
+    )
+
+    if (isError) {
+        Spacer(modifier = Modifier.padding(15.dp))
+        DisplayErrorMessage(appLanguage.error_getting_location)
+    }
+} 

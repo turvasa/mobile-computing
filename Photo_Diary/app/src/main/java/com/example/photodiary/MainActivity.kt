@@ -172,57 +172,6 @@ private fun scheduleDailyNotifications(context: Context, hour: Int, minutes: Int
 
 
 
-// -----------------------
-// - Location Permission -
-// -----------------------
-
-
-/**
- * Requests location permissions on a runtime.
- * Launches permission requests and triggers callbacks depending
- * on whether all required permissions are granted or not.
- *
- * Source: https://medium.com/@munbonecci/how-to-get-your-location-in-jetpack-compose-f085031df4c1
- *
- * @param onPermissionGranted Callback invoked when permissions are granted.
- * @param onPermissionDenied Callback invoked when permissions are denied.
- */
-@Composable
-fun RequestLocationPermission(
-    onPermissionGranted: () -> Unit,
-    onPermissionDenied: () -> Unit
-) {
-    // 1. Create a stateful launcher using rememberLauncherForActivityResult
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissionsMap ->
-        // 2. Check if all requested permissions are granted
-        val arePermissionsGranted = permissionsMap.values.reduce { acc, next ->
-            acc && next
-        }
-
-        // 3. Invoke the appropriate callback based on the permission result
-        if (arePermissionsGranted) {
-            onPermissionGranted.invoke()
-        } else {
-            onPermissionDenied.invoke()
-        }
-    }
-
-    // 4. Launch the permission request on composition
-    LaunchedEffect(Unit) {
-        locationPermissionLauncher.launch(
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-        )
-    }
-}
-
-
-
-
 // ----------------
 // - Destinations -
 // ----------------
@@ -333,10 +282,10 @@ private fun PhotoDiaryApp(preferences: SharedPreferences, db: AppDatabase) {
 
     // Get preferences
     val isDarkModePreference = preferences.getBoolean( "isDarkMode", false)
-    val isEnglishPreference = preferences.getBoolean( "isEnglish", false)
+    val isEnglishPreference = preferences.getBoolean( "isEnglish", true)
     val isNotificationONPreference = preferences.getBoolean("isNotificationON", true)
-    val hourPreference = preferences.getInt("notification_hour", 20)
-    val minutesPreference = preferences.getInt("notification_minutes", 0)
+    val hourPreference = preferences.getInt("notificationHour", 20)
+    val minutesPreference = preferences.getInt("notificationMinutes", 0)
     val isDefaultLocationUsedPreference = preferences.getBoolean("isDefaultLocationUsed", true)
     val latitudePreference = preferences.getFloat("defaultLatitude", 65.01236F)
     val longitudePreference =  preferences.getFloat("defaultLongitude", 25.46816F)
@@ -382,7 +331,7 @@ private fun PhotoDiaryApp(preferences: SharedPreferences, db: AppDatabase) {
         modifier = Modifier.fillMaxSize(),
         topBar = {
             Card(
-                colors = CardDefaults.cardColors(containerColor = appColors.secondary),
+                colors = CardDefaults.cardColors(containerColor = appColors.navBackground),
                 shape = RectangleShape,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -420,19 +369,20 @@ private fun PhotoDiaryApp(preferences: SharedPreferences, db: AppDatabase) {
                 savePreference(preferences, "isNotificationON", isNotificationON)
             },
             hour, minutes,
-            {
-                hour = it; minutes = it
-                savePreference(preferences, "hour", hour)
-                savePreference(preferences, "minutes", minutes)
+            { newHour, newMinutes ->
+                hour = newHour; minutes = newMinutes
+                savePreference(preferences, "notificationHour", hour)
+                savePreference(preferences, "notificationMinutes", minutes)
             },
             latitude, longitude,
-            {
-                latitude = it; longitude = it
+            { newLatitude, newLongitude ->
+                latitude = newLatitude; longitude = newLongitude
                 savePreference(preferences, "defaultLatitude", latitude)
                 savePreference(preferences, "defaultLongitude", longitude)
             },
             isDefaultLocationUsed,
             {
+                isDefaultLocationUsed = !isDefaultLocationUsed
                 savePreference(preferences, "isDefaultLocationUsed", isDefaultLocationUsed)
             },
             weatherViewModel, databaseViewModel, innerPadding,
@@ -495,7 +445,7 @@ private fun SetDestinationLabels(appLanguage: TextBlocks) {
 @Composable
 private fun SetNavBar(navController: NavController, isDarkMode: Boolean, appColors: AppColors, currentRoute: String?) {
     return NavigationBar(
-        containerColor = appColors.secondary,
+        containerColor = appColors.navBackground,
     ) {
         AppDestinations.entries.forEach {
             NavigationBarItem(
@@ -509,10 +459,10 @@ private fun SetNavBar(navController: NavController, isDarkMode: Boolean, appColo
                 },
                 label = { Text(
                     text = it.label,
-                    color = appColors.primaryText,
+                    color = appColors.title,
                 ) },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = if (isDarkMode) ColorsLightMode().primaryText else ColorsDarkMode().primaryText
+                    indicatorColor = if (isDarkMode) ColorsLightMode().title else ColorsDarkMode().title
                 ),
                 selected = (it.route == currentRoute),
                 onClick = {
@@ -578,11 +528,11 @@ private fun SetBodyCard(
     isDarkMode: Boolean, isEnglish: Boolean,
     onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
     appColors: AppColors, appLanguage: TextBlocks,
-    isNotificationON: Boolean, toggleNotification: () -> Unit,
+    isNotificationON: Boolean, toggleNotificationON: () -> Unit,
     hour: Int, minutes: Int,
     changePreferenceTime: (Int, Int) -> Unit,
     latitude: Float, longitude: Float, changeDefaultLocation: (Float, Float) -> Unit,
-    isDefaultLocationUsed: Boolean, toggleDefaultLocation: () -> Unit,
+    isDefaultLocationUsed: Boolean, toggleDefaultLocationON: () -> Unit,
     weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel, innerPadding: PaddingValues
 ) {
     NavHost(
@@ -595,10 +545,10 @@ private fun SetBodyCard(
         composable(AppDestinations.SETTINGS.route) {
             SettingsCard(
                 isDarkMode, isEnglish,
-                isNotificationON, toggleNotification,
+                isNotificationON, toggleNotificationON,
                 hour, minutes, changePreferenceTime,
                 latitude, longitude, changeDefaultLocation,
-                isDefaultLocationUsed, toggleDefaultLocation,
+                isDefaultLocationUsed, toggleDefaultLocationON,
                 onToggleDarkMode, onToggleLanguage,
                 appColors, appLanguage
             )
@@ -717,13 +667,13 @@ fun SetTabLayout(
         ) {
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = appColors.primary.copy(alpha = 0.8f)
+                    containerColor = appColors.cardBackground.copy(alpha = 0.8f)
                 ),
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .border(
                         3.dp,
-                        appColors.primary2,
+                        appColors.cardBorder,
                         RoundedCornerShape(10.dp)
                     )
                     .clip(RoundedCornerShape(10.dp))
@@ -758,16 +708,18 @@ fun BoxScope.TitleCard(appColors: AppColors, text: String, rounding: Dp, offset:
         modifier = Modifier
             .align(Alignment.TopStart)
             .offset(x = offset, y = offset)
-            .clip(RoundedCornerShape(
-                topStart = rounding,
-                topEnd = 0.dp,
-                bottomStart = 0.dp,
-                bottomEnd = rounding
-            )),
-        colors = CardDefaults.cardColors(appColors.primary2)
+            .clip(
+                RoundedCornerShape(
+                    topStart = rounding,
+                    topEnd = 0.dp,
+                    bottomStart = 0.dp,
+                    bottomEnd = rounding
+                )
+            ),
+        colors = CardDefaults.cardColors(appColors.cardBorder)
     ) {
         Text(
-            color = appColors.primaryText,
+            color = appColors.title,
             fontWeight = if (isLargeTitle) FontWeight.W700 else FontWeight.W500,
             fontSize = if (isLargeTitle) 23.sp else 15.sp,
             text = text,
@@ -795,7 +747,7 @@ fun SetButton(
     Button(
         onClick = onClickEvent,
         colors = ButtonDefaults.buttonColors(
-            containerColor = appColors.secondaryText
+            containerColor = appColors.placeholderText
         ),
         contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp, start = 12.dp, end = 12.dp),
         shape = RoundedCornerShape(25.dp),
@@ -803,23 +755,29 @@ fun SetButton(
             .wrapContentHeight()
             .border(
                 2.dp,
-                appColors.border.copy(alpha = 0.8f),
+                appColors.buttonBorder.copy(alpha = 0.8f),
                 RoundedCornerShape(25.dp)
             )
     ) {
 
         Text(
-            color = if (isDarkMode) ColorsLightMode().secondary2 else ColorsDarkMode().secondary2,
+            color = if (isDarkMode) ColorsLightMode().secondaryText else ColorsDarkMode().secondaryText,
             text = text
         )
 
-        Image(
-            painter = icon,
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .height(32.dp)
-                .padding(start = 4.dp)
-        )
+        DisplayIcon(icon, 32.dp)
     }
+}
+
+
+@Composable
+fun DisplayIcon(icon: Painter, height: Dp) {
+    Image(
+        painter = icon,
+        contentDescription = null,
+        contentScale = ContentScale.Fit,
+        modifier = Modifier
+            .height(height)
+            .padding(start = 4.dp)
+    )
 }

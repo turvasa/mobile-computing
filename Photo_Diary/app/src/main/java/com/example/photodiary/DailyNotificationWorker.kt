@@ -20,11 +20,14 @@ class DailyNotificationWorker(
 
 
     override suspend fun doWork(): Result {
+        val preferences = applicationContext.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val isNotificationsON = preferences.getBoolean("isNotificationON", true)
 
         NotificationHelper().showNotification(
             context = applicationContext,
             title = "Daily Diary dun",
-            message = "Add today's Diary entry!"
+            message = "Add today's Diary entry!",
+            isNotificationsON
         )
 
         return Result.success()

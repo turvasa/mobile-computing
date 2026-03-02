@@ -39,8 +39,8 @@ class TextFinnish : TextBlocks {
     override val settings_time_title = "Ilmoitukset"
     override val settings_time_change = "Ajoitus"
     override val settings_time_toggle = "Salli ilmoitukset: "
-    override val setting_title_location = "Sijainti"
-    override val setting_location_set_default = "Määritä oletus sijainti"
+    override val settings_title_location = "Sijainti"
+    override val settings_location_set_default = "Määritä oletus"
     override val settings_location_toggle = "Käytä VAIN oletus sijaintija: "
 
 

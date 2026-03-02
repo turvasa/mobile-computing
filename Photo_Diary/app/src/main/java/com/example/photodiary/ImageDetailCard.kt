@@ -75,7 +75,7 @@ private fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItem: Di
     // Formatting for info cards
     val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(
-            containerColor = appColors.primary
+            containerColor = appColors.cardBackground
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 20.dp
@@ -84,7 +84,7 @@ private fun SetBody(appColors: AppColors, appLanguage: TextBlocks, diaryItem: Di
             .fillMaxWidth(0.9f)
             .border(
                 2.dp,
-                appColors.primary2,
+                appColors.cardBorder,
                 RoundedCornerShape(20.dp)
             )
             .clip(RoundedCornerShape(20.dp))
@@ -140,7 +140,7 @@ fun DisplayImage(appColors: AppColors, diaryItem: DiaryItem) {
     val imageFile = File(context.filesDir, diaryItem.imageName)
 
     Box(
-        modifier = Modifier.border(2.dp, appColors.border)
+        modifier = Modifier.border(2.dp, appColors.imageBorder)
     ) {
         AsyncImage(
             model = imageFile,
@@ -172,7 +172,7 @@ private fun SetInfoDisplayCard(
     ) {
         Text(
             text = text,
-            color = appColors.secondary3
+            color = appColors.mainText
         )
     }
 }

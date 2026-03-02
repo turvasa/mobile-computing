@@ -39,8 +39,8 @@ class TextEnglish : TextBlocks {
     override val settings_time_title = "Notifications"
     override val settings_time_change = "Timing"
     override val settings_time_toggle = "Allow notifications:"
-    override val setting_title_location = "Location"
-    override val setting_location_set_default = "Define default location"
+    override val settings_title_location = "Location"
+    override val settings_location_set_default = "Set default"
     override val settings_location_toggle = "Use ONLY default location:"
 
 

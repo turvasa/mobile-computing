@@ -78,11 +78,11 @@ private fun SetBody(isDarkMode: Boolean, appColors: AppColors, appLanguage: Text
 
     // Formatting for setting cards
     val cardStyle = AppCardStyle(
-        colors = CardDefaults.cardColors(containerColor = appColors.primary),
+        colors = CardDefaults.cardColors(containerColor = appColors.cardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(2.dp, appColors.primary2, RoundedCornerShape(20.dp))
+            .border(2.dp, appColors.cardBorder, RoundedCornerShape(20.dp))
             .clip(RoundedCornerShape(20.dp))
     )
 
