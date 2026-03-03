@@ -82,7 +82,7 @@ private fun getCurrentLocation(
             isError(false)
         }
     }?.addOnFailureListener {
-        // If an error occurs, invoke the failure callback with the exception
+        // If an error occurs, invoke the failure callback
         isError(true)
     }
 }
