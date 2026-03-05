@@ -65,7 +65,7 @@ import androidx.core.content.FileProvider
 @Composable
 fun AddNewCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    latitude: Float, longitude: Float,
+    latitude: Float, longitude: Float, isDefaultLocationUsed: Boolean,
     weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel
 ) {
 
@@ -74,7 +74,7 @@ fun AddNewCard(
     SetTabLayout(appColors) {
         SetBody(
             isDarkMode, appColors, appLanguage,
-            latitude, longitude,
+            latitude, longitude, isDefaultLocationUsed,
             weatherViewModel, databaseViewModel
         )
     }
@@ -96,7 +96,7 @@ fun AddNewCard(
 @Composable
 private fun SetBody(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    latitude: Float, longitude: Float,
+    latitude: Float, longitude: Float, isDefaultLocationUsed: Boolean,
     weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel
 ) {
     // Formatting for setting cards
@@ -121,9 +121,8 @@ private fun SetBody(
 
     // Load the weather
     val context = LocalContext.current
-    val preferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     LaunchedEffect(Unit) {
-        weatherViewModel.loadWeather(context, preferences)
+        weatherViewModel.loadWeather(context, latitude, longitude, isDefaultLocationUsed)
     }
 
     Box(
@@ -686,7 +685,6 @@ fun DisplayWeatherIconImage(appColors: AppColors, weatherIcon: String?) {
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .size(64.dp)
-                .padding(start = 4.dp)
         )
     }
 }

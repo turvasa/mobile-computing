@@ -76,7 +76,7 @@ class TextFinnish : TextBlocks {
     override val error_must_be_integer = "Täytyy olla kokonaisluku!!"
     override val error_check = "Kelvottomia arvoja annettu! Tarkista kaikki kentät."
     override val error_not_available = "Ei saatavilla."
-    override val error_getting_location = "Sijainti ei ollut saatavilla. Kokeile uudestaan."
+    override val error_getting_location = "Sijainti ei ollut saatavilla. Onko se päällä?"
 
 
 

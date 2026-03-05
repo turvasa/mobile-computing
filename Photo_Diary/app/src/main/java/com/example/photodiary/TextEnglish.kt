@@ -77,7 +77,7 @@ class TextEnglish : TextBlocks {
     override val error_must_be_integer = "Value must be integer!"
     override val error_check = "Invalid values given! Check all fields."
     override val error_not_available = "Not available."
-    override val error_getting_location = "Unable to get location. Try again."
+    override val error_getting_location = "Unable to get location. Is location ON?"
 
 
 

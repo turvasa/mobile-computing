@@ -290,8 +290,8 @@ private fun PhotoDiaryApp(preferences: SharedPreferences, db: AppDatabase) {
     val hourPreference = preferences.getInt("notificationHour", 20)
     val minutesPreference = preferences.getInt("notificationMinutes", 0)
     val isDefaultLocationUsedPreference = preferences.getBoolean("isDefaultLocationUsed", true)
-    val latitudePreference = preferences.getFloat("defaultLatitude", 65.01236F)
-    val longitudePreference =  preferences.getFloat("defaultLongitude", 25.46816F)
+    val latitudePreference = preferences.getFloat("defaultLatitude", 65.73641F)
+    val longitudePreference =  preferences.getFloat("defaultLongitude", 24.56371F)
 
     // Navigation control
     val navController = rememberNavController()
@@ -570,7 +570,7 @@ private fun SetBodyCard(
         ) {
             AddNewCard(
                 isDarkMode, appColors, appLanguage,
-                latitude, longitude,
+                latitude, longitude, isDefaultLocationUsed,
                 weatherViewModel, databaseViewModel
             )
         }

@@ -68,8 +68,8 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 
 I found a good [source]("https://medium.com/@munbonecci/how-to-get-your-location-in-jetpack-compose-f085031df4c1") for 
 location tracking (mentioned also in the code docs). It gave me everything needed, but I had to make some edits to make 
-it sufficient for my purposes. The weather API uses last known user location or default location, if location permissions 
-aren't granted or the found location is null, the default location is set to be Oulu. The default location can be changed 
+it sufficient for my purposes. The weather API uses user location or default location, if location permissions 
+aren't granted or the found location is null, the default location is set to be Kemi. The default location can be changed 
 from settings, where the current location data is used and it is stored to the shared preferences:
 
 ```kotlin

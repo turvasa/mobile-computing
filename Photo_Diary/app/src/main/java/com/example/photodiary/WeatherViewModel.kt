@@ -61,18 +61,20 @@ class WeatherViewModel : ViewModel() {
      * or default location.
      *
      * @param context The context used for location services.
-     * @param preferences SharedPreferences for default location values.
+     * @param defaultLatitude Default location's latitude.
+     * @param defaultLongitude Default location's longitude.
+     * @param isDefaultLocationUsed Whether only the default location is used or not.
      */
-    fun loadWeather(context: Context, preferences: SharedPreferences) {
+    fun loadWeather(context: Context, defaultLatitude: Float, defaultLongitude: Float, isDefaultLocationUsed: Boolean) {
 
         // Get the weather for the give location
-        if (areLocationPermissionsGranted(context)) {
+        if (!isDefaultLocationUsed && areLocationPermissionsGranted(context)) {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-            sendWithLastUserLocation(preferences)
+            sendWithUserLocation(defaultLatitude, defaultLongitude)
         }
 
-        // Get the weather from the default location (Oulu)
-        else sendDefaultLocationAPICall(preferences)
+        // Get the weather from the default location
+        else sendWeatherAPICall(defaultLatitude, defaultLongitude)
     }
 
 
@@ -83,6 +85,7 @@ class WeatherViewModel : ViewModel() {
      * @param longitude Longitude in degrees.
      */
     private fun sendWeatherAPICall(latitude: Float, longitude: Float) {
+        Log.d("Location", "Location: $latitude, $longitude")
         viewModelScope.launch {
             _weather.value = weatherApi.getCurrentWeather(
                 lat = latitude,
@@ -90,19 +93,6 @@ class WeatherViewModel : ViewModel() {
                 apiKey = BuildConfig.WEATHER_API_KEY
             )
         }
-    }
-
-
-    /**
-     * Sends a Retrofit API call o fetch weather for the default location stored in preferences.
-     */
-    private fun sendDefaultLocationAPICall(preferences: SharedPreferences) {
-
-        Log.d("Location", "Location not found")
-
-        val latitude = preferences.getFloat("defaultLatitude", 65.01236F)
-        val longitude = preferences.getFloat("defaultLongitude", 25.46816F)
-        sendWeatherAPICall(latitude, longitude)
     }
 
 
@@ -117,41 +107,51 @@ class WeatherViewModel : ViewModel() {
 
 
     /**
-     * Sends the last known user location asynchronously to the Weather API.
+     * Retrieves the current user location asynchronously.
      *
      * Source: https://medium.com/@munbonecci/how-to-get-your-location-in-jetpack-compose-f085031df4c1
      *
-     * @param preferences SharedPreferences for default location fallback.
+     * @param defaultLatitude Default location's latitude.
+     * @param defaultLongitude Default location's longitude.
      */
     @SuppressLint("MissingPermission")
-    private fun sendWithLastUserLocation(preferences: SharedPreferences) {
+    private fun sendWithUserLocation(
+        defaultLatitude: Float, defaultLongitude: Float,
+        priority: Boolean = true
+    ) {
+
+        // Determine the accuracy priority based on the 'priority' parameter
+        val accuracy = if (priority) Priority.PRIORITY_HIGH_ACCURACY
+        else Priority.PRIORITY_BALANCED_POWER_ACCURACY
+
         // Retrieve the last known location
-        fusedLocationProviderClient?.lastLocation
-            ?.addOnSuccessListener { location ->
+        fusedLocationProviderClient?.getCurrentLocation(
+            accuracy, CancellationTokenSource().token
+        )?.addOnSuccessListener { location ->
 
-                // Invoke the API call with the location
-                if (location != null) {
+            // Invoke the API call with the location
+            if (location != null) {
 
-                    Log.d("Location", "Location found")
+                Log.d("Location", "Location found")
 
-                    val latitude = location.latitude.toFloat()
-                    val longitude = location.longitude.toFloat()
+                val latitude = location.latitude.toFloat()
+                val longitude = location.longitude.toFloat()
 
-                    Log.d("Location", "Latitude: %.6f, Longitude: %.6f".format(latitude, longitude))
+                Log.d("Location", "Latitude: %.6f, Longitude: %.6f".format(latitude, longitude))
 
-                    sendWeatherAPICall(latitude, longitude)
-                }
-
-                // Invoke the default location API call
-                else {
-                    Log.d("Location", "Null Location")
-                    sendDefaultLocationAPICall(preferences)
-                }
+                sendWeatherAPICall(latitude, longitude)
             }
-            ?.addOnFailureListener {
-                Log.d("Location", "Listener failed")
-                sendDefaultLocationAPICall(preferences)
+
+            // Invoke the default location API call
+            else {
+                Log.d("Location", "Null Location")
+                sendWeatherAPICall(defaultLatitude, defaultLongitude)
             }
+        }
+        ?.addOnFailureListener {
+            Log.d("Location", "Listener failed")
+            sendWeatherAPICall(defaultLatitude, defaultLongitude)
+        }
     }
 
 }

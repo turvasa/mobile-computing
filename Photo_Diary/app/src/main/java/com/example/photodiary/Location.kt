@@ -76,11 +76,14 @@ private fun getCurrentLocation(
     fusedLocationProviderClient?.getCurrentLocation(
         accuracy, CancellationTokenSource().token,
     )?.addOnSuccessListener { location ->
-        location?.let {
-            // If location is not null, invoke the success callback with latitude and longitude
-            onGetCurrentLocationSuccess(it.latitude.toFloat(), it.longitude.toFloat())
+
+        // If location is not null, invoke the success callback with latitude and longitude
+        if (location != null) {
+            onGetCurrentLocationSuccess(location.latitude.toFloat(), location.longitude.toFloat())
             isError(false)
         }
+
+        else isError(true)
     }?.addOnFailureListener {
         // If an error occurs, invoke the failure callback
         isError(true)

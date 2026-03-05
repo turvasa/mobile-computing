@@ -565,14 +565,19 @@ private fun SetLocationCard(
     // Get location names
     var cityName by remember { mutableStateOf<String?>(null) }
     var countryName by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(latitude, longitude) {
+    val locale = if (isEnglish) Locale.ENGLISH else Locale.forLanguageTag("fi")
+    LaunchedEffect(latitude, longitude, locale) { // React to locale (isEnglish) changes as well
+        // This makes the default location update happen visually
+        cityName = null
+        countryName = null
+
         getLocationName(
             latitude,
             longitude,
             context,
             { cityName = it },
             { countryName = it },
-            if (isEnglish) Locale.ENGLISH else Locale.forLanguageTag("fi")
+            locale
         )
     }
 
@@ -656,7 +661,7 @@ private fun SetLocationCardBody(
 
         Spacer(modifier = Modifier.padding(3.dp))
         Text(
-            text = "$cityName, $countryName",
+            text = listOfNotNull(cityName, countryName).joinToString(", "),
             color = appColors.mainText
         )
 
@@ -664,11 +669,12 @@ private fun SetLocationCardBody(
             painterResource(R.drawable.icon_pin),
             25.dp
         )
+    }
 
-        if (isError) {
-            Spacer(modifier = Modifier.padding(15.dp))
-            DisplayErrorMessage(appLanguage.error_getting_location)
-        }
+    // Error message
+    if (isError) {
+        Spacer(modifier = Modifier.padding(5.dp))
+        DisplayErrorMessage(appLanguage.error_getting_location)
     }
 }
 
