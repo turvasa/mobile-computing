@@ -1,7 +1,6 @@
-package com.example.photodiary
+package com.example.photodiary.colors
 
 import androidx.compose.ui.graphics.Color
-
 
 /**
  * Interface defining the color palette for the application.

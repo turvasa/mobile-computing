@@ -1,38 +1,33 @@
-package com.example.photodiary
+package com.example.photodiary.weather.viewmodel
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.util.Log
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.photodiary.BuildConfig
+import com.example.photodiary.location.areLocationPermissionsGranted
+import com.example.photodiary.weather.Weather
+import com.example.photodiary.weather.WeatherAPI
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlinx.coroutines.flow.StateFlow
-
 
 /**
- * [ViewModel] responsible for fetching and holding the current [Weather] data.
+ * [androidx.lifecycle.ViewModel] responsible for fetching and holding the current [com.example.photodiary.weather.Weather] data.
  */
 class WeatherViewModel : ViewModel() {
 
     /** Internal mutable weather state. */
     private val _weather = MutableStateFlow<Weather?>(null)
 
-    /** Publicly exposed weather as [StateFlow]. */
+    /** Publicly exposed weather as [kotlinx.coroutines.flow.StateFlow]. */
     val weather: StateFlow<Weather?> = _weather
 
 
@@ -63,14 +58,24 @@ class WeatherViewModel : ViewModel() {
      * @param context The context used for location services.
      * @param defaultLatitude Default location's latitude.
      * @param defaultLongitude Default location's longitude.
+     * @param toggleLatitude Callback for changing the latitude.
+     * @param toggleLongitude Callback for changing the longitude.
      * @param isDefaultLocationUsed Whether only the default location is used or not.
      */
-    fun loadWeather(context: Context, defaultLatitude: Float, defaultLongitude: Float, isDefaultLocationUsed: Boolean) {
+    fun loadWeather(
+        context: Context,
+        defaultLatitude: Float, defaultLongitude: Float,
+        toggleLatitude: (Float) -> Unit, toggleLongitude: (Float) -> Unit,
+        isDefaultLocationUsed: Boolean
+    ) {
 
         // Get the weather for the give location
         if (!isDefaultLocationUsed && areLocationPermissionsGranted(context)) {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-            sendWithUserLocation(defaultLatitude, defaultLongitude)
+            sendWithUserLocation(
+                defaultLatitude, defaultLongitude,
+                toggleLatitude, toggleLongitude
+            )
         }
 
         // Get the weather from the default location
@@ -113,10 +118,13 @@ class WeatherViewModel : ViewModel() {
      *
      * @param defaultLatitude Default location's latitude.
      * @param defaultLongitude Default location's longitude.
+     * @param toggleLatitude Callback for changing the latitude.
+     * @param toggleLongitude Callback for changing the longitude.
      */
     @SuppressLint("MissingPermission")
     private fun sendWithUserLocation(
         defaultLatitude: Float, defaultLongitude: Float,
+        toggleLatitude: (Float) -> Unit, toggleLongitude: (Float) -> Unit,
         priority: Boolean = true
     ) {
 
@@ -134,8 +142,13 @@ class WeatherViewModel : ViewModel() {
 
                 Log.d("Location", "Location found")
 
+                // Get the values
                 val latitude = location.latitude.toFloat()
                 val longitude = location.longitude.toFloat()
+
+                // Set the values
+                toggleLatitude(latitude)
+                toggleLongitude(longitude)
 
                 Log.d("Location", "Latitude: %.6f, Longitude: %.6f".format(latitude, longitude))
 

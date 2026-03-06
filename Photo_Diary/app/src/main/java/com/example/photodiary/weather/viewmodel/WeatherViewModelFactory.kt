@@ -1,8 +1,7 @@
-package com.example.photodiary
+package com.example.photodiary.weather.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-
 
 /**
  * Factory class for creating [WeatherViewModel] instance.

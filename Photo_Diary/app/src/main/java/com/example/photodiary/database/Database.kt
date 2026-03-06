@@ -1,7 +1,9 @@
-package com.example.photodiary
+package com.example.photodiary.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.photodiary.database.DiaryItem
+import com.example.photodiary.database.DiaryItemDAO
 
 
 /**

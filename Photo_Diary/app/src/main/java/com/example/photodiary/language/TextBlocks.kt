@@ -1,4 +1,4 @@
-package com.example.photodiary
+package com.example.photodiary.language
 
 /**
  * Interface defining all textual content used throughout the Photo Diary app.

@@ -1,9 +1,8 @@
-package com.example.photodiary
+package com.example.photodiary.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-
 
 /**
  * Entity representing a diary entry in the Room database

@@ -1,12 +1,12 @@
-package com.example.photodiary
+package com.example.photodiary.database
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import com.example.photodiary.database.DiaryItem
 import kotlinx.coroutines.flow.Flow
-
 
 /**
  * DAO (Data Access Object) interface for performing database operations on [DiaryItem] entities.
@@ -17,9 +17,9 @@ interface DiaryItemDAO {
 
 
     /**
-     * Gets a [Flow] containing all diary items in the database in descending order by ID.
+     * Gets a [kotlinx.coroutines.flow.Flow] containing all diary items in the database in descending order by ID.
      *
-     * @return [Flow] of list of DiaryItem.
+     * @return [kotlinx.coroutines.flow.Flow] of list of DiaryItem.
      */
     @Query("SELECT * FROM DiaryItem ORDER BY id DESC")
     fun getAll(): Flow<List<DiaryItem>>

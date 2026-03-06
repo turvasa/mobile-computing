@@ -1,18 +1,15 @@
-package com.example.photodiary
+package com.example.photodiary.notifications
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.work.WorkManager
-
 
 /**
  * Worker responsible for showing a daily notification to the user.
- * Uses [WorkManager] to execute the notifications in the foreground.
+ * Uses [androidx.work.WorkManager] to execute the notifications in the foreground.
  *
  * @param context Application context.
- * @param workerParams Parameters passed by [WorkManager].
+ * @param workerParams Parameters passed by [androidx.work.WorkManager].
  */
 class DailyNotificationWorker(
     context: Context,

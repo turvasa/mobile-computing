@@ -1,4 +1,4 @@
-package com.example.photodiary
+package com.example.photodiary.tabs
 
 import android.content.Context
 import android.net.Uri
@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,13 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import java.io.File
 import androidx.core.content.FileProvider
+import com.example.photodiary.TitleCard
+import com.example.photodiary.colors.AppColors
+import com.example.photodiary.database.viewmodel.DatabaseViewModel
+import com.example.photodiary.database.DiaryItem
+import com.example.photodiary.language.TextBlocks
+import com.example.photodiary.weather.Weather
+import com.example.photodiary.weather.viewmodel.WeatherViewModel
 
 
 /**
@@ -57,24 +65,24 @@ import androidx.core.content.FileProvider
  * @param isDarkMode Indicates if dark theme is active.
  * @param appColors Current color palette.
  * @param appLanguage Current localized text provider.
- * @param latitude Latitude of the weather's location.
- * @param longitude Longitude of the weather's location.
+ * @param defaultLatitude Latitude of the weather's default location.
+ * @param defaultLongitude Longitude of the weather's location.
  * @param weatherViewModel ViewModel for weather data.
  * @param databaseViewModel ViewModel for database operations.
  */
 @Composable
 fun AddNewCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    latitude: Float, longitude: Float, isDefaultLocationUsed: Boolean,
+    defaultLatitude: Float, defaultLongitude: Float, isDefaultLocationUsed: Boolean,
     weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel
 ) {
 
     clearCache(LocalContext.current)
 
-    SetTabLayout(appColors) {
+    _root_ide_package_.com.example.photodiary.SetTabLayout(appColors) {
         SetBody(
             isDarkMode, appColors, appLanguage,
-            latitude, longitude, isDefaultLocationUsed,
+            defaultLatitude, defaultLongitude, isDefaultLocationUsed,
             weatherViewModel, databaseViewModel
         )
     }
@@ -88,19 +96,19 @@ fun AddNewCard(
  * @param isDarkMode Indicates if dark theme is active.
  * @param appColors Current color palette.
  * @param appLanguage Current localized text provider.
- * @param latitude Latitude of the weather's location.
- * @param longitude Longitude of the weather's location.
+ * @param defaultLatitude Latitude of the weather's default location.
+ * @param defaultLongitude Longitude of the weather's default location.
  * @param weatherViewModel ViewModel for weather data.
  * @param databaseViewModel ViewModel for database operations.
  */
 @Composable
 private fun SetBody(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    latitude: Float, longitude: Float, isDefaultLocationUsed: Boolean,
+    defaultLatitude: Float, defaultLongitude: Float, isDefaultLocationUsed: Boolean,
     weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel
 ) {
     // Formatting for setting cards
-    val cardStyle = AppCardStyle(
+    val cardStyle = _root_ide_package_.com.example.photodiary.AppCardStyle(
         colors = CardDefaults.cardColors(containerColor = appColors.cardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         modifier = Modifier
@@ -114,6 +122,8 @@ private fun SetBody(
     var description by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val weather by weatherViewModel.weather.collectAsState(initial = null)
+    var latitude by remember { mutableFloatStateOf(defaultLatitude) }
+    var longitude by remember { mutableFloatStateOf(defaultLongitude) }
 
     // Diary Item info errors
     var titleError by remember { mutableStateOf<String?>(null) }
@@ -122,7 +132,11 @@ private fun SetBody(
     // Load the weather
     val context = LocalContext.current
     LaunchedEffect(Unit) {
-        weatherViewModel.loadWeather(context, latitude, longitude, isDefaultLocationUsed)
+        weatherViewModel.loadWeather(
+            context, latitude, longitude,
+            { latitude = it }, { longitude = it },
+            isDefaultLocationUsed
+        )
     }
 
     Box(
@@ -134,7 +148,7 @@ private fun SetBody(
 
         TitleCard(appColors, appLanguage.title_add, 6.dp, 0.dp, true)
 
-        SetDefaultColumn(
+        _root_ide_package_.com.example.photodiary.SetDefaultColumn(
             PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
         ) {
 
@@ -197,7 +211,7 @@ private fun SetBody(
  * @return Modified AppCardStyle with error styling if needed.
  */
 @Composable
-fun getCorrectCardStyle(cardStyle: AppCardStyle, isError: Boolean) : AppCardStyle {
+fun getCorrectCardStyle(cardStyle: com.example.photodiary.AppCardStyle, isError: Boolean) : com.example.photodiary.AppCardStyle {
     val correctStyle = (
         if (!isError) cardStyle
         else cardStyle.copy(
@@ -267,12 +281,12 @@ private fun clearCache(context: Context) {
 @Composable
 private fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: AppCardStyle,
+    cardStyle: com.example.photodiary.AppCardStyle,
     title: String, description: String?,
     titleError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
 ) {
-    SetCardLayout(
+    _root_ide_package_.com.example.photodiary.SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_info,
         cardStyle = getCorrectCardStyle(cardStyle, (titleError != null))
@@ -407,17 +421,17 @@ fun SetInfoInput(
 private fun SetImageGetter(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: AppCardStyle,
+    cardStyle: com.example.photodiary.AppCardStyle,
     imageUri: Uri?, imageUriError: String?,
     toggleImageUri: (Uri?) -> Unit
 ) {
-    SetCardLayout(
+    _root_ide_package_.com.example.photodiary.SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_file,
         cardStyle = getCorrectCardStyle(cardStyle, (imageUriError != null)),
         PaddingValues(top = 40.dp, bottom = 40.dp)
     ) {
-        SetDefaultRow(PaddingValues(0.dp)) {
+        _root_ide_package_.com.example.photodiary.SetDefaultRow(PaddingValues(0.dp)) {
             SetAddFileButton(isDarkMode, appColors, appLanguage, toggleImageUri)
             Spacer(modifier = Modifier.padding(4.dp))
             SetTakeImageButton(isDarkMode, appColors, appLanguage, toggleImageUri)
@@ -467,9 +481,15 @@ private fun SetAddFileButton(
     }
 
     // Button icon
-    val icon = painterResource(R.drawable.icon_add_image_file)
+    val icon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_add_image_file)
 
-    SetButton(isDarkMode, appColors, text, onClickEvent, icon)
+    _root_ide_package_.com.example.photodiary.SetButton(
+        isDarkMode,
+        appColors,
+        text,
+        onClickEvent,
+        icon
+    )
 }
 
 
@@ -508,9 +528,15 @@ private fun SetTakeImageButton(
     val onClickEvent = { getTakeImageEvent(context, cameraLauncher) { tempUri = it } }
 
     // Button icon
-    val icon = painterResource(R.drawable.icon_take_photo)
+    val icon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_take_photo)
 
-    SetButton(isDarkMode, appColors, text, onClickEvent, icon)
+    _root_ide_package_.com.example.photodiary.SetButton(
+        isDarkMode,
+        appColors,
+        text,
+        onClickEvent,
+        icon
+    )
 }
 
 
@@ -600,26 +626,28 @@ private fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
 fun SetWeatherCard(
     locationName: String, temperature: Double?, weatherIcon: String?,
     appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: AppCardStyle
+    cardStyle: com.example.photodiary.AppCardStyle
 ) {
 
     Log.d("Weather Icon", "Weather card start")
 
-    SetCardLayout(
+    _root_ide_package_.com.example.photodiary.SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_weather,
         cardStyle = cardStyle,
         PaddingValues(20.dp)
-    ){
-        SetDefaultRow(PaddingValues(0.dp)) {
+    ) {
+        _root_ide_package_.com.example.photodiary.SetDefaultRow(PaddingValues(0.dp)) {
             Text(
-                text = Weather.formatTemperature(temperature),
+                text = Weather.Companion.formatTemperature(
+                    temperature
+                ),
                 fontSize = 24.sp,
                 color = appColors.mainText
             )
             Spacer(modifier = Modifier.padding(8.dp))
 
-            SetDefaultColumn(PaddingValues(0.dp)) {
+            _root_ide_package_.com.example.photodiary.SetDefaultColumn(PaddingValues(0.dp)) {
                 DisplayWeatherIconImage(appColors, weatherIcon)
                 Text(
                     text = locationName,
@@ -720,14 +748,14 @@ fun DisplayWeatherIconImage(appColors: AppColors, weatherIcon: String?) {
 @Composable
 private fun SetAddCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: AppCardStyle,
+    cardStyle: com.example.photodiary.AppCardStyle,
     title: String, description: String?, imageUri: Uri?, weather: Weather?,
     latitude: Float, longitude: Float,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, isError: Boolean,
     viewModel: DatabaseViewModel
 ) {
-    SetCardLayout(
+    _root_ide_package_.com.example.photodiary.SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_create,
         cardStyle = cardStyle
@@ -788,9 +816,15 @@ private fun SetAddButton(
     )
 
     // Button icon
-    val icon = painterResource(R.drawable.icon_add_entry)
+    val icon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_add_entry)
 
-    SetButton(isDarkMode, appColors, text, onClickEvent, icon)
+    _root_ide_package_.com.example.photodiary.SetButton(
+        isDarkMode,
+        appColors,
+        text,
+        onClickEvent,
+        icon
+    )
 
     // Display error message
     if (isError) {

@@ -1,4 +1,4 @@
-package com.example.photodiary
+package com.example.photodiary.location
 
 import android.content.Context
 import android.location.Address

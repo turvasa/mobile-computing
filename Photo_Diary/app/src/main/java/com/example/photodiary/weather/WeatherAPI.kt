@@ -1,8 +1,7 @@
-package com.example.photodiary
+package com.example.photodiary.weather
 
-import retrofit2.http.Query
 import retrofit2.http.GET
-
+import retrofit2.http.Query
 
 /**
  * Retrofit interface for fetching [Weather] data from OpenWeatherMap API

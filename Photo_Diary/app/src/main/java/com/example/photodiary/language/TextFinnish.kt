@@ -1,4 +1,4 @@
-package com.example.photodiary
+package com.example.photodiary.language
 
 /**
  * Finnish implementation of [TextBlocks], providing all textual content

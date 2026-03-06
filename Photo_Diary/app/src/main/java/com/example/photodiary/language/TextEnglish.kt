@@ -1,4 +1,4 @@
-package com.example.photodiary
+package com.example.photodiary.language
 
 /**
  * English implementation of [TextBlocks], providing all textual content

@@ -1,4 +1,4 @@
-package com.example.photodiary
+package com.example.photodiary.tabs
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -23,6 +23,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
+import com.example.photodiary.TitleCard
+import com.example.photodiary.colors.AppColors
+import com.example.photodiary.database.viewmodel.DatabaseViewModel
+import com.example.photodiary.database.DiaryItem
+import com.example.photodiary.language.TextBlocks
 import java.io.File
 
 
@@ -41,8 +46,8 @@ fun HomeCard(
     appColors: AppColors, appLanguage: TextBlocks,
     viewModel: DatabaseViewModel, navController: NavHostController
 ) {
-    SetTabLayout(appColors) {
-            SetBody(appColors, appLanguage, viewModel, navController)
+    _root_ide_package_.com.example.photodiary.SetTabLayout(appColors) {
+        SetBody(appColors, appLanguage, viewModel, navController)
     }
 }
 
@@ -131,7 +136,7 @@ private fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseViewModel, na
  * Gets a list of all the current diary items from the database.
  *
  * @param viewModel [DatabaseViewModel] providing diary entries.
- * @return List of [DiaryItem] objects currently stored in the database.
+ * @return List of [com.example.photodiary.database.DiaryItem] objects currently stored in the database.
  */
 @Composable
 private fun getImages(viewModel: DatabaseViewModel) : List<DiaryItem> {

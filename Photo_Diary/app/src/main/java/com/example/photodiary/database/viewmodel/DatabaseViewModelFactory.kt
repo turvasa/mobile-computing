@@ -1,8 +1,8 @@
-package com.example.photodiary
+package com.example.photodiary.database.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-
+import com.example.photodiary.database.DiaryItemDAO
 
 /**
  * Factory class for creating [DatabaseViewModel] instances with a custom DAO

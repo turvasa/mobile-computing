@@ -1,17 +1,18 @@
-package com.example.photodiary
+package com.example.photodiary.database.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.photodiary.database.DiaryItem
+import com.example.photodiary.database.DiaryItemDAO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-
 /**
- * [ViewModel] for interacting with the Room database.
- * Provides [StateFlow] streams of diary items and methods to
+ * [androidx.lifecycle.ViewModel] for interacting with the Room database.
+ * Provides [kotlinx.coroutines.flow.StateFlow] streams of diary items and methods to
  * ADD, UPDATE or DELETE diary entries from the database.
  *
  * @param diaryItemDAO DAO for accessing DiaryItem entities.
@@ -20,14 +21,14 @@ class DatabaseViewModel(private val diaryItemDAO: DiaryItemDAO) : ViewModel() {
 
 
     /**
-     * [StateFlow] containing all diary entries loaded from the database.
+     * [kotlinx.coroutines.flow.StateFlow] containing all diary entries loaded from the database.
      * Automatically updates when when the database changes.
      */
     val diaryItems: StateFlow<List<DiaryItem>> =
         diaryItemDAO.getAll()
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
+                started = SharingStarted.Companion.WhileSubscribed(5_000),
                 initialValue = emptyList()
             )
 
@@ -42,7 +43,7 @@ class DatabaseViewModel(private val diaryItemDAO: DiaryItemDAO) : ViewModel() {
         diaryItemDAO.findByID(id)
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
+                started = SharingStarted.Companion.WhileSubscribed(5_000),
                 initialValue = null
             )
 

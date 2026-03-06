@@ -76,7 +76,23 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import java.util.concurrent.TimeUnit
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-
+import com.example.photodiary.colors.AppColors
+import com.example.photodiary.colors.ColorsDarkMode
+import com.example.photodiary.colors.ColorsLightMode
+import com.example.photodiary.database.AppDatabase
+import com.example.photodiary.database.viewmodel.DatabaseViewModel
+import com.example.photodiary.database.viewmodel.DatabaseViewModelFactory
+import com.example.photodiary.language.TextBlocks
+import com.example.photodiary.language.TextEnglish
+import com.example.photodiary.language.TextFinnish
+import com.example.photodiary.notifications.DailyNotificationWorker
+import com.example.photodiary.tabs.AddNewCard
+import com.example.photodiary.tabs.HomeCard
+import com.example.photodiary.tabs.ImageDetailCard
+import com.example.photodiary.tabs.ImageEditDetailCard
+import com.example.photodiary.tabs.SettingsCard
+import com.example.photodiary.weather.viewmodel.WeatherViewModel
+import com.example.photodiary.weather.viewmodel.WeatherViewModelFactory
 
 
 class MainActivity : ComponentActivity() {

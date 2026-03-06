@@ -1,4 +1,4 @@
-package com.example.photodiary
+package com.example.photodiary.tabs
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -24,6 +24,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.example.photodiary.TitleCard
+import com.example.photodiary.colors.AppColors
+import com.example.photodiary.database.viewmodel.DatabaseViewModel
+import com.example.photodiary.database.DiaryItem
+import com.example.photodiary.language.TextBlocks
+import com.example.photodiary.location.getLocationName
 import java.io.File
 import java.util.Locale
 
@@ -60,7 +66,7 @@ fun ImageDetailCard(
         return
     }
 
-    SetTabLayout(appColors) {
+    _root_ide_package_.com.example.photodiary.SetTabLayout(appColors) {
         SetBody(appColors, appLanguage, diaryItem!!, isEnglish)
     }
 }
@@ -80,7 +86,7 @@ private fun SetBody(
     diaryItem: DiaryItem, isEnglish: Boolean
 ) {
     // Formatting for info cards
-    val cardStyle = AppCardStyle(
+    val cardStyle = _root_ide_package_.com.example.photodiary.AppCardStyle(
         colors = CardDefaults.cardColors(
             containerColor = appColors.cardBackground
         ),
@@ -108,7 +114,7 @@ private fun SetBody(
     ) {
         TitleCard(appColors, appLanguage.details, 6.dp, 0.dp, true)
 
-        SetDefaultColumn(
+        _root_ide_package_.com.example.photodiary.SetDefaultColumn(
             PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
         ) {
             // Image
@@ -121,7 +127,12 @@ private fun SetBody(
             // Description
             if (diaryItem.description != null && diaryItem.description.isNotBlank()) {
                 Spacer(Modifier.height(20.dp))
-                SetInfoDisplayCard(appColors,appLanguage.add_info_description, diaryItem.description, cardStyle)
+                SetInfoDisplayCard(
+                    appColors,
+                    appLanguage.add_info_description,
+                    diaryItem.description,
+                    cardStyle
+                )
             }
 
             // Weather
@@ -140,7 +151,13 @@ private fun SetBody(
                 val locationName = "$cityName, $countryName"
 
                 SetWeatherCard(
-                    locationName, diaryItem.temperature, diaryItem.weatherIcon, appColors, appLanguage, cardStyle)
+                    locationName,
+                    diaryItem.temperature,
+                    diaryItem.weatherIcon,
+                    appColors,
+                    appLanguage,
+                    cardStyle
+                )
             }
         }
     }
@@ -181,9 +198,9 @@ fun DisplayImage(appColors: AppColors, diaryItem: DiaryItem) {
 @Composable
 private fun SetInfoDisplayCard(
     appColors: AppColors,
-    title: String, text: String, cardStyle: AppCardStyle,
+    title: String, text: String, cardStyle: com.example.photodiary.AppCardStyle,
 ) {
-    SetCardLayout(
+    _root_ide_package_.com.example.photodiary.SetCardLayout(
         appColors = appColors,
         title = title,
         cardStyle = cardStyle,

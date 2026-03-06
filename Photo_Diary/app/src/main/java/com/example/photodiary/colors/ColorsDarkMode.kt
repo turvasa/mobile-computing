@@ -1,7 +1,6 @@
-package com.example.photodiary
+package com.example.photodiary.colors
 
 import androidx.compose.ui.graphics.Color
-
 
 /**
  * Implementation of [AppColors] for dark mode theme.
