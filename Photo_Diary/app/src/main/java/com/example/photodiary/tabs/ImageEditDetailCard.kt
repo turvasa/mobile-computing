@@ -29,10 +29,13 @@ import com.example.photodiary.colors.AppColors
 import com.example.photodiary.database.viewmodel.DatabaseViewModel
 import com.example.photodiary.database.DiaryItem
 import com.example.photodiary.language.TextBlocks
-import com.example.photodiary.tabs.DisplayErrorMessage
-import com.example.photodiary.tabs.DisplayImage
-import com.example.photodiary.tabs.SetInfoInput
-import com.example.photodiary.tabs.getCorrectCardStyle
+import com.example.photodiary.AppDestinations
+import com.example.photodiary.AppCardStyle
+import com.example.photodiary.SetDefaultColumn
+import com.example.photodiary.SetCardLayout
+import com.example.photodiary.SetTabLayout
+import com.example.photodiary.SetButton
+import com.example.photodiary.R
 
 
 /**
@@ -69,7 +72,7 @@ fun ImageEditDetailCard(
         return
     }
 
-    _root_ide_package_.com.example.photodiary.SetTabLayout(appColors) {
+    SetTabLayout(appColors) {
         SetBody(
             isDarkMode, appColors, appLanguage,
             diaryItem!!, viewModel, navController
@@ -95,7 +98,7 @@ private fun SetBody(
 ) {
 
     // Formatting for setting cards
-    val cardStyle = _root_ide_package_.com.example.photodiary.AppCardStyle(
+    val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(containerColor = appColors.cardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         modifier = Modifier
@@ -107,14 +110,10 @@ private fun SetBody(
     // Diary Item information
     var title by remember { mutableStateOf(diaryItem.title) }
     var description by remember { mutableStateOf(diaryItem.description) }
-    //var temperature by remember { mutableStateOf("") }
-    //var location by remember { mutableStateOf("") }
 
     // Diary Item info errors
     var titleError by remember { mutableStateOf<String?>(null) }
     var descriptionError by remember { mutableStateOf<String?>(null) }
-    //var temperatureError by remember { mutableStateOf<String?>(null) }
-    //var locationError by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier
@@ -125,7 +124,7 @@ private fun SetBody(
 
         TitleCard(appColors, appLanguage.edit, 6.dp, 0.dp, true)
 
-        _root_ide_package_.com.example.photodiary.SetDefaultColumn(
+        SetDefaultColumn(
             PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
         ) {
             DisplayImage(appColors, diaryItem)
@@ -192,9 +191,9 @@ private fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
     title: String, value: String, placeholder: String, error: String?,
     label: String, maxLines: Int, height: Dp, changeInfo: (String) -> Unit,
-    cardStyle: com.example.photodiary.AppCardStyle,
+    cardStyle: AppCardStyle,
 ) {
-    _root_ide_package_.com.example.photodiary.SetCardLayout(
+    SetCardLayout(
         appColors = appColors,
         title = title,
         cardStyle = getCorrectCardStyle(cardStyle, (error != null)),
@@ -238,12 +237,12 @@ private fun SetInfoCard(
 @Composable
 private fun SetUpdateCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle,
+    cardStyle: AppCardStyle,
     diaryItem: DiaryItem, title: String, description: String,
     titleError: (String) -> Unit, viewModel: DatabaseViewModel,
     navController: NavController
 ) {
-    _root_ide_package_.com.example.photodiary.SetCardLayout(
+    SetCardLayout(
         appColors = appColors,
         title = appLanguage.update,
         cardStyle = cardStyle
@@ -289,9 +288,9 @@ private fun SetUpdateButton(
     )
 
     // Button icon
-    val icon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_add_entry)
+    val icon = painterResource(R.drawable.icon_add_entry)
 
-    _root_ide_package_.com.example.photodiary.SetButton(
+    SetButton(
         isDarkMode,
         appColors,
         text,
@@ -342,7 +341,7 @@ private fun getUpdateOnClickEvent(
                 longitude = diaryItem.longitude
             )
             viewModel.updateDiaryItem(updatedDiaryItem)
-            navController.navigate(_root_ide_package_.com.example.photodiary.AppDestinations.HOME.route)
+            navController.navigate(AppDestinations.HOME.route)
         }
     }
 }
@@ -370,10 +369,10 @@ private fun getUpdateOnClickEvent(
 @Composable
 private fun SetDeleteCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle, diaryItem: DiaryItem,
+    cardStyle: AppCardStyle, diaryItem: DiaryItem,
     viewModel: DatabaseViewModel, navController: NavController
 ) {
-    _root_ide_package_.com.example.photodiary.SetCardLayout(
+    SetCardLayout(
         appColors = appColors,
         title = appLanguage.delete,
         cardStyle = cardStyle
@@ -407,13 +406,13 @@ private fun SetDeleteButton(
     // Button click event
     val onClickEvent = {
         viewModel.deleteDiaryItem(diaryItem)
-        navController.navigate(_root_ide_package_.com.example.photodiary.AppDestinations.HOME.route)
+        navController.navigate(AppDestinations.HOME.route)
     }
 
     // Button icon
-    val icon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_delete)
+    val icon = painterResource(R.drawable.icon_delete)
 
-    _root_ide_package_.com.example.photodiary.SetButton(
+    SetButton(
         isDarkMode,
         appColors,
         text,

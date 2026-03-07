@@ -20,7 +20,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 /**
- * [androidx.lifecycle.ViewModel] responsible for fetching and holding the current [com.example.photodiary.weather.Weather] data.
+ * [androidx.lifecycle.ViewModel] responsible for fetching and holding the current [Weather] data.
  */
 class WeatherViewModel : ViewModel() {
 

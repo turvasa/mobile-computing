@@ -42,6 +42,13 @@ import com.example.photodiary.location.getCurrentLocation
 import com.example.photodiary.location.getLocationName
 import com.example.photodiary.location.rememberLocationPermissionLauncher
 import java.util.Locale
+import com.example.photodiary.AppCardStyle
+import com.example.photodiary.DisplayIcon
+import com.example.photodiary.SetDefaultColumn
+import com.example.photodiary.SetDefaultRow
+import com.example.photodiary.SetTabLayout
+import com.example.photodiary.SetButton
+import com.example.photodiary.R
 
 
 /**
@@ -65,7 +72,7 @@ fun SettingsCard(
     onToggleDarkMode: () -> Unit, onToggleLanguage: () -> Unit,
     appColors: AppColors, appLanguage: TextBlocks
 ) {
-    _root_ide_package_.com.example.photodiary.SetTabLayout(appColors) {
+    SetTabLayout(appColors) {
         SetBody(
             isDarkMode, isEnglish,
             isNotificationON, toggleNotification,
@@ -102,7 +109,7 @@ private fun SetBody(
     appColors: AppColors, appLanguage: TextBlocks
 ) {
 
-    val cardStyle = _root_ide_package_.com.example.photodiary.AppCardStyle(
+    val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(
             containerColor = appColors.cardBackground
         ),
@@ -131,7 +138,7 @@ private fun SetBody(
 
         TitleCard(appColors, appLanguage.title_settings, 6.dp, 0.dp, true)
 
-        _root_ide_package_.com.example.photodiary.SetDefaultColumn(
+        SetDefaultColumn(
             paddingValues = PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
         ) {
             // Dark mode
@@ -196,7 +203,7 @@ private fun SetSettingCard(
     isDarkMode: Boolean, cardTitle: String,
     buttonText: String, buttonIcon: Painter,
     settingFunction: () -> Unit,
-    appColors: AppColors, cardStyle: com.example.photodiary.AppCardStyle,
+    appColors: AppColors, cardStyle: AppCardStyle,
 ) {
     ElevatedCard(
         colors = cardStyle.colors,
@@ -209,13 +216,13 @@ private fun SetSettingCard(
         ) {
             TitleCard(appColors, cardTitle, 15.dp, 2.dp, false)
 
-            _root_ide_package_.com.example.photodiary.SetDefaultColumn(
+            SetDefaultColumn(
                 PaddingValues(
                     top = 40.dp,
                     bottom = 40.dp
                 )
             ) {
-                _root_ide_package_.com.example.photodiary.SetButton(
+                SetButton(
                     isDarkMode,
                     appColors,
                     buttonText,
@@ -236,7 +243,7 @@ fun SetOnOffSwitcher(
     appColors: AppColors, switcherMessage: String,
     isOn: Boolean, toggleOn: () -> Unit
 ) {
-    _root_ide_package_.com.example.photodiary.SetDefaultRow(PaddingValues(0.dp)) {
+    SetDefaultRow(PaddingValues(0.dp)) {
         Text(
             text = switcherMessage,
             color = appColors.mainText
@@ -254,10 +261,10 @@ fun SetOnOffSwitcher(
                 .clip(RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center
         ) {
-            _root_ide_package_.com.example.photodiary.DisplayIcon(
+            DisplayIcon(
                 painterResource(
-                    if (isOn) _root_ide_package_.com.example.photodiary.R.drawable.toggle_right
-                    else _root_ide_package_.com.example.photodiary.R.drawable.toggle_left
+                    if (isOn) R.drawable.toggle_right
+                    else R.drawable.toggle_left
                 ),
                 48.dp
             )
@@ -286,7 +293,7 @@ fun SetOnOffSwitcher(
 private fun SetDarkModeCard(
     isDarkMode: Boolean, onToggleDarkMode: () -> Unit,
     appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle
+    cardStyle: AppCardStyle
 ) {
 
     // Card title
@@ -299,8 +306,8 @@ private fun SetDarkModeCard(
 
     // Button icon
     val buttonIcon = painterResource(
-        if (isDarkMode) _root_ide_package_.com.example.photodiary.R.drawable.icon_sun
-        else _root_ide_package_.com.example.photodiary.R.drawable.icon_moon
+        if (isDarkMode) R.drawable.icon_sun
+        else R.drawable.icon_moon
     )
 
     SetSettingCard(
@@ -334,7 +341,7 @@ private fun SetDarkModeCard(
 private fun SetLanguageCard(
     isDarkMode: Boolean, isEnglish: Boolean,
     onToggleLanguage: () -> Unit, appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle
+    cardStyle: AppCardStyle
 ) {
 
     // Card title
@@ -345,8 +352,8 @@ private fun SetLanguageCard(
 
     // Button icon
     val buttonIcon = painterResource(
-        if (isEnglish) _root_ide_package_.com.example.photodiary.R.drawable.flag_finnish
-        else _root_ide_package_.com.example.photodiary.R.drawable.flag_english
+        if (isEnglish) R.drawable.flag_finnish
+        else R.drawable.flag_english
     )
 
     SetSettingCard(
@@ -381,7 +388,7 @@ private fun SetNotificationTimeCard(
     isNotificationON: Boolean, toggleNotification: () -> Unit,
     hour: Int, minutes: Int, changePreferenceTime: (Int, Int) -> Unit,
     appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle,
+    cardStyle: AppCardStyle,
 ) {
 
     // Card title
@@ -391,7 +398,7 @@ private fun SetNotificationTimeCard(
     val buttonText = appLanguage.settings_time_change
 
     // Button icon
-    val buttonIcon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_notification_clock)
+    val buttonIcon = painterResource(R.drawable.icon_notification_clock)
 
     // Button on click event
 
@@ -438,7 +445,7 @@ private fun SetSettingTimeCard(
     changePreferenceTime: (Int, Int) -> Unit,
     hideClock: () -> Unit, onClickEvent: () -> Unit,
     showTimePicker: Boolean,
-    cardStyle: com.example.photodiary.AppCardStyle,
+    cardStyle: AppCardStyle,
 ) {
     ElevatedCard(
         colors = cardStyle.colors,
@@ -451,7 +458,7 @@ private fun SetSettingTimeCard(
         ) {
             TitleCard(appColors, cardTitle, 15.dp, 2.dp, false)
 
-            _root_ide_package_.com.example.photodiary.SetDefaultColumn(
+            SetDefaultColumn(
                 PaddingValues(
                     top = 40.dp,
                     bottom = 40.dp
@@ -465,8 +472,8 @@ private fun SetSettingTimeCard(
                     )
                     Spacer(modifier = Modifier.padding(10.dp))
 
-                    _root_ide_package_.com.example.photodiary.SetDefaultRow(PaddingValues(0.dp)) {
-                        _root_ide_package_.com.example.photodiary.SetButton(
+                    SetDefaultRow(PaddingValues(0.dp)) {
+                        SetButton(
                             isDarkMode,
                             appColors,
                             buttonText,
@@ -525,22 +532,21 @@ private fun SetDialTimeInput(
         is24Hour = true
     )
 
-    _root_ide_package_.com.example.photodiary.SetDefaultColumn(paddingValues = PaddingValues(0.dp)) {
+    SetDefaultColumn(paddingValues = PaddingValues(0.dp)) {
         TimePicker(timePickerState)
 
-        _root_ide_package_.com.example.photodiary.SetDefaultRow(paddingValues = PaddingValues(0.dp)) {
-            _root_ide_package_.com.example.photodiary.SetButton(
+        SetDefaultRow(paddingValues = PaddingValues(0.dp)) {
+            SetButton(
                 isDarkMode, appColors, appLanguage.settings_button_time_confirm,
                 { onConfirm(timePickerState.hour, timePickerState.minute) },
-                painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_confirm_time)
+                painterResource(R.drawable.icon_confirm_time)
             )
-
-            _root_ide_package_.com.example.photodiary.SetButton(
+            SetButton(
                 isDarkMode,
                 appColors,
                 appLanguage.settings_button_time_dismiss,
                 onDismiss,
-                painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_cancel)
+                painterResource(R.drawable.icon_cancel)
             )
         }
     }
@@ -569,7 +575,7 @@ private fun SetLocationCard(
     latitude: Float, longitude: Float,
     isDefaultLocation: Boolean, toggleDefaultLocationON: () -> Unit,
     changeDefaultLocation: (Float, Float) -> Unit,
-    cardStyle: com.example.photodiary.AppCardStyle
+    cardStyle: AppCardStyle
 ) {
     var isError by remember { mutableStateOf(false) }
     val toggleError: (Boolean) -> Unit =  { isError = it }
@@ -582,7 +588,7 @@ private fun SetLocationCard(
     val buttonText = appLanguage.settings_location_set_default
 
     // Button icon
-    val buttonIcon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_location)
+    val buttonIcon = painterResource(R.drawable.icon_location)
 
     // Location permissions
     val launchPermissionRequest =
@@ -629,7 +635,7 @@ private fun SetLocationCard(
         ) {
             TitleCard(appColors, cardTitle, 15.dp, 2.dp, false)
 
-            _root_ide_package_.com.example.photodiary.SetDefaultColumn(
+            SetDefaultColumn(
                 PaddingValues(
                     top = 40.dp,
                     bottom = 40.dp
@@ -683,8 +689,8 @@ private fun SetLocationCardBody(
     )
     Spacer(modifier = Modifier.padding(10.dp))
 
-    _root_ide_package_.com.example.photodiary.SetDefaultRow(PaddingValues(0.dp)) {
-        _root_ide_package_.com.example.photodiary.SetButton(
+    SetDefaultRow(PaddingValues(0.dp)) {
+        SetButton(
             isDarkMode, appColors, buttonText,
             {
                 if (areLocationPermissionsGranted(context)) {
@@ -707,7 +713,7 @@ private fun SetLocationCardBody(
         )
 
         _root_ide_package_.com.example.photodiary.DisplayIcon(
-            painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_pin),
+            painterResource(R.drawable.icon_pin),
             25.dp
         )
     }

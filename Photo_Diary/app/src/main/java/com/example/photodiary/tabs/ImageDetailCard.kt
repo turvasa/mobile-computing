@@ -32,6 +32,10 @@ import com.example.photodiary.language.TextBlocks
 import com.example.photodiary.location.getLocationName
 import java.io.File
 import java.util.Locale
+import com.example.photodiary.AppCardStyle
+import com.example.photodiary.SetDefaultColumn
+import com.example.photodiary.SetCardLayout
+import com.example.photodiary.SetTabLayout
 
 
 /**
@@ -66,7 +70,7 @@ fun ImageDetailCard(
         return
     }
 
-    _root_ide_package_.com.example.photodiary.SetTabLayout(appColors) {
+    SetTabLayout(appColors) {
         SetBody(appColors, appLanguage, diaryItem!!, isEnglish)
     }
 }
@@ -86,7 +90,7 @@ private fun SetBody(
     diaryItem: DiaryItem, isEnglish: Boolean
 ) {
     // Formatting for info cards
-    val cardStyle = _root_ide_package_.com.example.photodiary.AppCardStyle(
+    val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(
             containerColor = appColors.cardBackground
         ),
@@ -114,7 +118,7 @@ private fun SetBody(
     ) {
         TitleCard(appColors, appLanguage.details, 6.dp, 0.dp, true)
 
-        _root_ide_package_.com.example.photodiary.SetDefaultColumn(
+        SetDefaultColumn(
             PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
         ) {
             // Image
@@ -198,9 +202,9 @@ fun DisplayImage(appColors: AppColors, diaryItem: DiaryItem) {
 @Composable
 private fun SetInfoDisplayCard(
     appColors: AppColors,
-    title: String, text: String, cardStyle: com.example.photodiary.AppCardStyle,
+    title: String, text: String, cardStyle: AppCardStyle,
 ) {
-    _root_ide_package_.com.example.photodiary.SetCardLayout(
+    SetCardLayout(
         appColors = appColors,
         title = title,
         cardStyle = cardStyle,

@@ -55,6 +55,13 @@ import com.example.photodiary.database.DiaryItem
 import com.example.photodiary.language.TextBlocks
 import com.example.photodiary.weather.Weather
 import com.example.photodiary.weather.viewmodel.WeatherViewModel
+import com.example.photodiary.AppCardStyle
+import com.example.photodiary.SetDefaultColumn
+import com.example.photodiary.SetDefaultRow
+import com.example.photodiary.SetCardLayout
+import com.example.photodiary.SetTabLayout
+import com.example.photodiary.SetButton
+import com.example.photodiary.R
 
 
 /**
@@ -79,7 +86,7 @@ fun AddNewCard(
 
     clearCache(LocalContext.current)
 
-    _root_ide_package_.com.example.photodiary.SetTabLayout(appColors) {
+    SetTabLayout(appColors) {
         SetBody(
             isDarkMode, appColors, appLanguage,
             defaultLatitude, defaultLongitude, isDefaultLocationUsed,
@@ -108,7 +115,7 @@ private fun SetBody(
     weatherViewModel: WeatherViewModel, databaseViewModel: DatabaseViewModel
 ) {
     // Formatting for setting cards
-    val cardStyle = _root_ide_package_.com.example.photodiary.AppCardStyle(
+    val cardStyle = AppCardStyle(
         colors = CardDefaults.cardColors(containerColor = appColors.cardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
         modifier = Modifier
@@ -148,7 +155,7 @@ private fun SetBody(
 
         TitleCard(appColors, appLanguage.title_add, 6.dp, 0.dp, true)
 
-        _root_ide_package_.com.example.photodiary.SetDefaultColumn(
+        SetDefaultColumn(
             PaddingValues(top = 40.dp, bottom = 40.dp, start = 20.dp, end = 20.dp)
         ) {
 
@@ -211,7 +218,7 @@ private fun SetBody(
  * @return Modified AppCardStyle with error styling if needed.
  */
 @Composable
-fun getCorrectCardStyle(cardStyle: com.example.photodiary.AppCardStyle, isError: Boolean) : com.example.photodiary.AppCardStyle {
+fun getCorrectCardStyle(cardStyle: AppCardStyle, isError: Boolean) : AppCardStyle {
     val correctStyle = (
         if (!isError) cardStyle
         else cardStyle.copy(
@@ -281,12 +288,12 @@ private fun clearCache(context: Context) {
 @Composable
 private fun SetInfoCard(
     appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle,
+    cardStyle: AppCardStyle,
     title: String, description: String?,
     titleError: String?,
     toggleTitle: (String) -> Unit, toggleDescription: (String) -> Unit
 ) {
-    _root_ide_package_.com.example.photodiary.SetCardLayout(
+    SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_info,
         cardStyle = getCorrectCardStyle(cardStyle, (titleError != null))
@@ -421,17 +428,17 @@ fun SetInfoInput(
 private fun SetImageGetter(
     isDarkMode: Boolean,
     appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle,
+    cardStyle: AppCardStyle,
     imageUri: Uri?, imageUriError: String?,
     toggleImageUri: (Uri?) -> Unit
 ) {
-    _root_ide_package_.com.example.photodiary.SetCardLayout(
+    SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_file,
         cardStyle = getCorrectCardStyle(cardStyle, (imageUriError != null)),
         PaddingValues(top = 40.dp, bottom = 40.dp)
     ) {
-        _root_ide_package_.com.example.photodiary.SetDefaultRow(PaddingValues(0.dp)) {
+        SetDefaultRow(PaddingValues(0.dp)) {
             SetAddFileButton(isDarkMode, appColors, appLanguage, toggleImageUri)
             Spacer(modifier = Modifier.padding(4.dp))
             SetTakeImageButton(isDarkMode, appColors, appLanguage, toggleImageUri)
@@ -481,9 +488,9 @@ private fun SetAddFileButton(
     }
 
     // Button icon
-    val icon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_add_image_file)
+    val icon = painterResource(R.drawable.icon_add_image_file)
 
-    _root_ide_package_.com.example.photodiary.SetButton(
+    SetButton(
         isDarkMode,
         appColors,
         text,
@@ -528,9 +535,9 @@ private fun SetTakeImageButton(
     val onClickEvent = { getTakeImageEvent(context, cameraLauncher) { tempUri = it } }
 
     // Button icon
-    val icon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_take_photo)
+    val icon = painterResource(R.drawable.icon_take_photo)
 
-    _root_ide_package_.com.example.photodiary.SetButton(
+    SetButton(
         isDarkMode,
         appColors,
         text,
@@ -626,18 +633,18 @@ private fun DisplayUriImage(appColors: AppColors, imageUri: Uri) {
 fun SetWeatherCard(
     locationName: String, temperature: Double?, weatherIcon: String?,
     appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle
+    cardStyle: AppCardStyle
 ) {
 
     Log.d("Weather Icon", "Weather card start")
 
-    _root_ide_package_.com.example.photodiary.SetCardLayout(
+    SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_weather,
         cardStyle = cardStyle,
         PaddingValues(20.dp)
     ) {
-        _root_ide_package_.com.example.photodiary.SetDefaultRow(PaddingValues(0.dp)) {
+        SetDefaultRow(PaddingValues(0.dp)) {
             Text(
                 text = Weather.Companion.formatTemperature(
                     temperature
@@ -647,7 +654,7 @@ fun SetWeatherCard(
             )
             Spacer(modifier = Modifier.padding(8.dp))
 
-            _root_ide_package_.com.example.photodiary.SetDefaultColumn(PaddingValues(0.dp)) {
+            SetDefaultColumn(PaddingValues(0.dp)) {
                 DisplayWeatherIconImage(appColors, weatherIcon)
                 Text(
                     text = locationName,
@@ -748,14 +755,14 @@ fun DisplayWeatherIconImage(appColors: AppColors, weatherIcon: String?) {
 @Composable
 private fun SetAddCard(
     isDarkMode: Boolean, appColors: AppColors, appLanguage: TextBlocks,
-    cardStyle: com.example.photodiary.AppCardStyle,
+    cardStyle: AppCardStyle,
     title: String, description: String?, imageUri: Uri?, weather: Weather?,
     latitude: Float, longitude: Float,
     titleError: (String) -> Unit, imageUriError: (String) -> Unit,
     zeroInfoFields: () -> Unit, isError: Boolean,
     viewModel: DatabaseViewModel
 ) {
-    _root_ide_package_.com.example.photodiary.SetCardLayout(
+    SetCardLayout(
         appColors = appColors,
         title = appLanguage.add_create,
         cardStyle = cardStyle
@@ -816,9 +823,9 @@ private fun SetAddButton(
     )
 
     // Button icon
-    val icon = painterResource(_root_ide_package_.com.example.photodiary.R.drawable.icon_add_entry)
+    val icon = painterResource(R.drawable.icon_add_entry)
 
-    _root_ide_package_.com.example.photodiary.SetButton(
+    SetButton(
         isDarkMode,
         appColors,
         text,

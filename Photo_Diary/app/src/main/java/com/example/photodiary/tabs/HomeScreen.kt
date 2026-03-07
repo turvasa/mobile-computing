@@ -29,6 +29,8 @@ import com.example.photodiary.database.viewmodel.DatabaseViewModel
 import com.example.photodiary.database.DiaryItem
 import com.example.photodiary.language.TextBlocks
 import java.io.File
+import com.example.photodiary.SetTabLayout
+
 
 
 /**
@@ -46,7 +48,7 @@ fun HomeCard(
     appColors: AppColors, appLanguage: TextBlocks,
     viewModel: DatabaseViewModel, navController: NavHostController
 ) {
-    _root_ide_package_.com.example.photodiary.SetTabLayout(appColors) {
+    SetTabLayout(appColors) {
         SetBody(appColors, appLanguage, viewModel, navController)
     }
 }
@@ -136,7 +138,7 @@ private fun DisplayPhotos(appColors: AppColors, viewModel: DatabaseViewModel, na
  * Gets a list of all the current diary items from the database.
  *
  * @param viewModel [DatabaseViewModel] providing diary entries.
- * @return List of [com.example.photodiary.database.DiaryItem] objects currently stored in the database.
+ * @return List of [DiaryItem] objects currently stored in the database.
  */
 @Composable
 private fun getImages(viewModel: DatabaseViewModel) : List<DiaryItem> {
