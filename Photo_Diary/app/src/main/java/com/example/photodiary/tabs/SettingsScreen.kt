@@ -57,6 +57,13 @@ import com.example.photodiary.R
  *
  * @param isDarkMode Current dark mode state.
  * @param isEnglish Current language state (true = English, false = Finnish).
+ * @param isNotificationON Whether the notifications on ON or turner OFF.
+ * @param toggleNotification Callback for changing the isNotificationON value.
+ * @param hour Current hour for the notification.
+ * @param minutes Current minutes for the notification.
+ * @param changePreferenceTime Callback to update hour and minutes.
+ * @param isDefaultLocationUsed Whether a default location is always used for weather info or only in if necessary.
+ * @param toggleDefaultLocationON Callback for changing the default location usage.
  * @param onToggleDarkMode Callback to toggle dark mode.
  * @param onToggleLanguage Callback to toggle language.
  * @param appColors Color palette to style the UI.
@@ -92,10 +99,17 @@ fun SettingsCard(
  * Displays button oriented setting cards for the settings sections.
  *
  * @param isDarkMode Current dark mode state.
- * @param isEnglish Current language state.
+ * @param isEnglish Current language state (true = English, false = Finnish).
+ * @param isNotificationON Whether the notifications on ON or turner OFF.
+ * @param toggleNotification Callback for changing the isNotificationON value.
+ * @param hour Current hour for the notification.
+ * @param minutes Current minutes for the notification.
+ * @param changePreferenceTime Callback to update hour and minutes.
+ * @param isDefaultLocationUsed Whether a default location is always used for weather info or only in if necessary.
+ * @param toggleDefaultLocationON Callback for changing the default location usage.
  * @param onToggleDarkMode Callback to toggle dark mode.
  * @param onToggleLanguage Callback to toggle language.
- * @param appColors Color palette for UI elements.
+ * @param appColors Color palette to style the UI.
  * @param appLanguage Text strings for the current language.
  */
 @Composable
@@ -377,7 +391,11 @@ private fun SetLanguageCard(
  * Displays the Notification Timing setting section
  *
  * @param isDarkMode Current dark mode state.
- * @param preferences SharedPreferences storing the settings.
+ * @param isNotificationON Whether the notifications on ON or turner OFF.
+ * @param toggleNotification Callback for changing the isNotificationON value.
+ * @param hour Current hour for the notification.
+ * @param minutes Current minutes for the notification.
+ * @param changePreferenceTime Callback to update hour and minutes.
  * @param appColors Color palette for UI.
  * @param appLanguage Language strings.
  * @param cardStyle Card style for the dark mode section.
@@ -426,11 +444,9 @@ private fun SetNotificationTimeCard(
  * @param cardTitle Title for the card.
  * @param buttonText Text for the edit button.
  * @param buttonIcon Icon for the edit button.
- * @param preferences SharedPreferences storing the settings.
- * @param hour Current hour for the notification.
- * @param minutes Current minutes for the notification.
- * @param toggleHour Callback to update hour state.
- * @param toggleMinutes Callback to update minutes state.
+ * @param isNotificationON Whether the notifications on ON or turner OFF.
+ * @param toggleNotification Callback for changing the isNotificationON value.
+ * @param changePreferenceTime Callback to update hour and minutes.
  * @param hideClock Callback to hide the time picker.
  * @param onClickEvent Callback to show the time picker.
  * @param showTimePicker Whether to show the time picker.
